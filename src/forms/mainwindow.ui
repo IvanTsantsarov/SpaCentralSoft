@@ -31,6 +31,11 @@
           <height>0</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <pointsize>20</pointsize>
+         </font>
+        </property>
         <property name="selectionRectVisible">
          <bool>false</bool>
         </property>

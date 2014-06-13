@@ -5,7 +5,9 @@
 #include <QGraphicsTextItem>
 #include <QListWidget>
 
-#include "constants.h"
+#include "custom/constants.h"
+#include "custom/structures.h"
+#include "custom/types.h"
 #include "cgraphicsscene.h"
 #include "cgraphicsrectitem.h"
 
@@ -15,6 +17,11 @@ class TemperatureIndicator : public QObject
 {
     Q_OBJECT
 private:
+#ifndef USE_OBSOLETE
+    ProgramSettings _programSettings;
+    IndicatorProperties _indicatorProperties;
+#endif // USE_OBSOLETE
+
     QString _text;
     QListWidget* _listWidget;
     qreal _temperatureDesired = 17.5;
@@ -35,7 +42,15 @@ private:
 private:
 
 public:
+
+#ifndef USE_OBSOLETE
+    explicit TemperatureIndicator(IndicatorProperties indicatorProperties,
+                                  ProgramSettings programSettings,
+                                  QListWidget* listWidget,
+                                  QObject* parent = 0);
+#else
     explicit TemperatureIndicator(QString text, QString imageFileName, QListWidget* listWidget, QObject* parent = 0);
+#endif // USE_OBSOLETE
 
     CGraphicsRectItem* getGraphicsRectItem() const;
     QString text() const; 

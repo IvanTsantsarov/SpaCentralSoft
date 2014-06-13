@@ -3,16 +3,37 @@
 #include <QFontMetrics>
 #include <QDebug>
 
+
+#ifndef USE_OBSOLETE
+TemperatureIndicator::TemperatureIndicator(IndicatorProperties indicatorProperties,
+                                           ProgramSettings programSettings,
+                                           QListWidget *listWidget,
+                                           QObject *parent) :
+#else
 TemperatureIndicator::TemperatureIndicator(QString text, QString imageFileName, QListWidget* listWidget, QObject *parent) :
+#endif // USE_OBSOLETE
     QObject(parent)
 {
     // Add the item to ListView
+#ifndef USE_OBSOLETE
+    _indicatorProperties = indicatorProperties;
+    _programSettings = programSettings;
+
+    _text = _indicatorProperties.text;
+#else
     _text = text;
+#endif // USE_OBSOLETE
     _listWidget = listWidget;
     _listWidget->addItem(_text);
 
+    // Load the highlight image map
+#ifndef USE_OBSOLETE
+    QString imageFileName(ASSETS_PATH + _programSettings.assetsPath + _indicatorProperties.highlightImageFileName);
+#endif // USE_OBSOLTETE
+
 #ifdef USE_GRAPHICSRECTITEM_ZONE
     QImage image(imageFileName);
+
     if (image.isNull()) {
         qDebug() << "Image failed to load:" << imageFileName;
     }
@@ -23,7 +44,11 @@ TemperatureIndicator::TemperatureIndicator(QString text, QString imageFileName, 
     _graphicsRectItem_Zone = new QGraphicsRectItem();
     _graphicsRectItem_Zone->setBrush(image);
     _graphicsRectItem_Zone->setRect(0, 0, image.width(), image.height());
+#ifndef USE_OBSOLETE
+    _graphicsRectItem_Zone->setOpacity(programSettings.highlightOpacity);
+#else
     _graphicsRectItem_Zone->setOpacity(SETTINGS_HIGHLIGHTOPACITY);
+#endif // USE_OBSOLETE
     _graphicsRectItem_Zone->setVisible(false);
     _graphicsRectItem_Zone->setZValue(0);
 #else
@@ -36,7 +61,11 @@ TemperatureIndicator::TemperatureIndicator(QString text, QString imageFileName, 
     }
 
     _graphicsPixmapItem = new QGraphicsPixmapItem(pixmap);
+#ifndef USE_OBSOLETE
+    _graphicsPixmapItem->setOpacity(_programSettings.opacity);
+#else
     _graphicsPixmapItem->setOpacity(SETTINGS_HIGHLIGHTOPACITY);
+#endif // USE_OBSOLETE
     _graphicsPixmapItem->setVisible(false);
     _graphicsPixmapItem->setZValue(0);
 #endif // USE_GRAPHICSRECTITEM_ZONE
@@ -45,7 +74,11 @@ TemperatureIndicator::TemperatureIndicator(QString text, QString imageFileName, 
     _graphicsScene = static_cast<CGraphicsScene*>(parent);
 
     _graphicsRectItem = new CGraphicsRectItem();
+#ifndef USE_OBSOLETE
+    _graphicsRectItem->setOpacity(_programSettings.indicator.opacity);
+#else
     _graphicsRectItem->setOpacity(SETTINGS_OPACITY);
+#endif // USE_OBSOLETE
     _graphicsRectItem->setFlag(QGraphicsItem::GraphicsItemFlag::ItemIsSelectable);
     _graphicsRectItem->setZValue(1);
 #ifdef DEBUG_MODE_FINETUNING
@@ -53,10 +86,18 @@ TemperatureIndicator::TemperatureIndicator(QString text, QString imageFileName, 
 #endif // DEBUG_MODE_FINETUNING
 
     _graphicsTextItem = new QGraphicsTextItem();
+#ifndef USE_OBSOLETE
+    _graphicsTextItem->setFont(_programSettings.indicator.font);
+    QColor color(_programSettings.indicator.fontColor);
+    if (!color.isValid()) {
+        color.setNamedColor("White");
+    }
+#else
     QFont font(SETTINGS_FONTFAMILY, SETTINGS_FONTSIZE);
     font.setBold(SETTINGS_FONTWEIGHTBOLD);
     _graphicsTextItem->setFont(font);
     QColor color(SETTINGS_FONTCOLOR);
+#endif // USE_OBSOLETE
     _graphicsTextItem->setDefaultTextColor(color);
     _graphicsTextItem->setZValue(2);
 
@@ -156,8 +197,13 @@ void TemperatureIndicator::update()
     // Prepare the background rectangle
     // Calculate the size for the rectangle
     QFontMetrics fontMetrics(_graphicsTextItem->font());
+#ifndef USE_OBSOLETE
+    int textWidth = fontMetrics.width(indication) + _programSettings.indicator.rectPadding;
+    int textHeight = fontMetrics.height() + _programSettings.indicator.rectPadding;
+#else
     int textWidth = fontMetrics.width(indication) + SETTINGS_RECTPADDING;
     int textHeight = fontMetrics.height() + SETTINGS_RECTPADDING;
+#endif // USE_OBSOLETE
     qDebug() << "Text width: " << textWidth << " Text height: " << textHeight;
 
     QRectF rect = _graphicsRectItem->rect();
@@ -167,7 +213,11 @@ void TemperatureIndicator::update()
 
     QBrush brush(Qt::black, Qt::BrushStyle::SolidPattern);
 
-    int alpha = _indicatorSelected ? 255 : SETTINGS_ALPHA;
+#ifndef USE_OBSOLETE
+    int alpha = _indicatorSelected ? _programSettings.indicator.alphaSelected : _programSettings.indicator.alphaDisselected;
+#else
+    int alpha = _indicatorSelected ? SETTINGS_ALPHA_SELECTED : SETTINGS_ALPHA_UNSELECTED;
+#endif // USE_OBSOLETE
 
     switch (_sensorState) {
     case SensorState::Undefined:
@@ -190,7 +240,11 @@ void TemperatureIndicator::update()
     _graphicsRectItem->setBrush(brush);
 
     if (_indicatorSelected) {
+#ifndef USE_OBSOLETE
+        QPen pen(Qt::white, _programSettings.indicator.borderwidth);
+#else
         QPen pen(Qt::white, SETTINGS_BORDERWIDTH);
+#endif // USE_OBSOLETE
 #ifdef USE_GRAPHICSRECTITEM_ZONE
         _graphicsRectItem_Zone->setVisible(true);
 #else

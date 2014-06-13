@@ -1,9 +1,13 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#define CONFIG_FILE "assets/config.xml"
+#define ASSETS_PATH "assets/"
+
+#ifdef USE_OBSOLETE
 #define ASSETS_BMP_MAP "assets/map.png"
 
-#define SETTINGS_HIGHLIGHTOPACITY 0.5
+#define SETTINGS_HIGHLIGHTOPACITY 0.6
 #define SETTINGS_OPACITY 1
 #define SETTINGS_BORDERWIDTH 3
 #define SETTINGS_FONTFAMILY "Helvetica"
@@ -11,15 +15,8 @@
 #define SETTINGS_FONTWEIGHTBOLD true
 #define SETTINGS_FONTCOLOR "White"
 #define SETTINGS_RECTPADDING 10
-#define SETTINGS_ALPHA 128
-
-enum class SensorState
-{
-    Undefined,
-    Disconnected,
-    TemperatureNormal,
-    TemperatureLower,
-    TemperatureHigher
-};
+#define SETTINGS_ALPHA_SELECTED 150
+#define SETTINGS_ALPHA_UNSELECTED 100
+#endif // USE_OBSOLETE
 
 #endif // CONSTANTS_H

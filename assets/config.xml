@@ -1,0 +1,34 @@
+﻿<config>
+    <settings>
+        <language value="en"/>
+        <assets path="dark/"/>
+        <background imageSource="map.png"/>
+        <highlight opacity="0.6"/>
+        <indicator>
+            <opacity value="1"/>
+            <borderwidth value="3"/>
+            <font family="Helvetica" size="38" weight="bold" color="White"/>
+            <rectpadding value="10"/>
+            <alpha selected="150" disselected="100"/>
+        </indicator>
+    </settings>
+    <indicators language="bg">
+        <item text="Сауна 1"            image="zone1.png" x="555"  y="273"/>
+        <item text="Сауна 2"            image="zone2.png" x="830"  y="200"/>
+        <item text="Басейн"	            image="zone3.png" x="1165" y="269"/>
+        <item text="Масаж 1"            image="zone4.png" x="1152" y="490"/>
+        <item text="Масаж 2"            image="zone5.png" x="688"  y="663"/>
+        <item text="Хидро Масаж 1"      image="zone6.png" x="903"  y="645"/>
+        <item text="Хидро Масаж 2"		image="zone7.png" x="1094" y="824"/>
+    </indicators>
+    <indicators language="en">
+        <item text="Sauna 1"            image="zone1.png" x="555"  y="273"/>
+        <item text="Sauna 2"            image="zone2.png" x="830"  y="200"/>
+        <item text="Pool"               image="zone3.png" x="1165" y="269"/>
+        <item text="Massage 1"          image="zone4.png" x="1152" y="490"/>
+        <item text="Massage 2"          image="zone5.png" x="688"  y="663"/>
+        <item text="Hydro-Massage 1"    image="zone6.png" x="903"  y="645"/>
+        <item text="Hydro-Massage 2"    image="zone7.png" x="1094" y="824"/>
+    </indicators>
+</config>
+    

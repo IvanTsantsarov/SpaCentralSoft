@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+//#include "custom/structures.h"
+#include "configloader.h"
 #include "cgraphicsscene.h"
 #include "temperatureindicator.h"
 
@@ -19,6 +21,10 @@ class MainWindow : public QMainWindow
 
 private:
     Ui::MainWindow* ui;
+
+    ProgramSettings _programSettings;
+    QList<IndicatorProperties> _listIndicatorProperties;
+
     CGraphicsScene* _scene;
     QList<TemperatureIndicator*> _temperatureIndicators;
     TemperatureIndicator* _currentTemperatureIndicator;
