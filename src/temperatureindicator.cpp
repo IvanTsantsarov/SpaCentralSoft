@@ -241,7 +241,16 @@ void TemperatureIndicator::update()
 
     if (_indicatorSelected) {
 #ifndef USE_OBSOLETE
-        QPen pen(Qt::white, _programSettings.indicator.borderwidth);
+        QColor colorBorder;
+        if(QColor::isValidColor(_programSettings.indicator.bordercolor)) {
+            colorBorder.setNamedColor(_programSettings.indicator.bordercolor);
+        }
+        else {
+            qDebug() << "Invalid <bodercolor> value: " + _programSettings.indicator.bordercolor;
+
+            colorBorder = Qt::white;
+        }
+        QPen pen(colorBorder, _programSettings.indicator.borderwidth);
 #else
         QPen pen(Qt::white, SETTINGS_BORDERWIDTH);
 #endif // USE_OBSOLETE

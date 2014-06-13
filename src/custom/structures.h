@@ -16,6 +16,7 @@ struct ProgramSettings
     {
         qreal opacity;
         int borderwidth;
+        QString bordercolor;
         QString fontFamily;
         int     fontSize;
         QString fontWeight;

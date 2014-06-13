@@ -7,6 +7,7 @@
         <indicator>
             <opacity value="1"/>
             <borderwidth value="3"/>
+            <bordercolor value="white"/>
             <font family="Helvetica" size="38" weight="bold" color="White"/>
             <rectpadding value="10"/>
             <alpha selected="150" disselected="100"/>

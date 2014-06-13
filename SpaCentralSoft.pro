@@ -62,3 +62,29 @@ OTHER_FILES += \
     assets/light/zone6.png \
     assets/light/zone7.png \
     assets/config.xml
+
+###################################################################################################
+# Copy assets to DESTDIR
+###################################################################################################
+
+## If using Shadow build, get the output folder
+#CONFIG(release, debug|release): DESTDIR = $$OUT_PWD/release
+#CONFIG(debug, debug|release): DESTDIR = $$OUT_PWD/debug
+#
+## If using normal build (non-Shadow) that would have worked as well.
+#CONFIG(release, debug|release): DESTDIR = release
+#CONFIG(debug, debug|release): DESTDIR = debug
+
+CONFIG += copy_dir_files # Enables the install rule to also copy directories, not just files
+
+assets.path = $$DESTDIR/assets
+assets.files +=$$files(assets/*.*)
+INSTALLS += assets
+
+assetsImagesDark.path = $$DESTDIR/assets/dark
+assetsImagesDark.files +=$$files(assets/dark/*.*)
+INSTALLS += assetsImagesDark
+
+assetsImagesLight.path = $$DESTDIR/assets/light
+assetsImagesLight.files +=$$files(assets/light/*.*)
+INSTALLS += assetsImagesLight

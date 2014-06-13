@@ -170,6 +170,9 @@ void ConfigLoader::parseProgramSettings(QDomElement& element)
     currentChildElement = this->nextSiblingElement("borderwidth", currentChildElement);
     _programSettings.indicator.borderwidth = getAttributeValue("value", currentChildElement).toInt();
 
+    currentChildElement = this->nextSiblingElement("bordercolor", currentChildElement);
+    _programSettings.indicator.bordercolor = getAttributeValue("value", currentChildElement);
+
     // <font>
     currentChildElement = this->nextSiblingElement("font", currentChildElement);
     _programSettings.indicator.fontFamily = getAttributeValue("family", currentChildElement);
