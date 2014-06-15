@@ -1,9 +1,9 @@
 SpaCentralSoft
 ==============
 
-'''
+```
     qDebug() << "A project developed in Qt 5.3";
-'''
+```
 
 | Date             | Version           |
 | :--------------- | ----------------: |
