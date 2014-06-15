@@ -219,4 +219,5 @@ pip-log.txt
 ############################
 
 .dropbox
-preview/
+SpaCentralSoft.pro.user.*
+build-*/

@@ -19,7 +19,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = SpaCentralSoft
 TEMPLATE = app
 
-DESTDIR = ../SpaCentralSoftBin
+DESTDIR = ../../SpaCentralSoftBin
 
 SOURCES += src/main.cpp\
     src/mainwindow.cpp \
