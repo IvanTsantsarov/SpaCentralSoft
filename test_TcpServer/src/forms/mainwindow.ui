@@ -105,7 +105,14 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="lineEdit_Byte01"/>
+          <widget class="QLineEdit" name="lineEdit_Byte01">
+           <property name="text">
+            <string>s</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -128,7 +135,14 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="lineEdit_Byte02"/>
+          <widget class="QLineEdit" name="lineEdit_Byte02">
+           <property name="text">
+            <string>235</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -151,7 +165,14 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="lineEdit_Byte03"/>
+          <widget class="QLineEdit" name="lineEdit_Byte03">
+           <property name="text">
+            <string>-12</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -174,7 +195,14 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="lineEdit_Byte04"/>
+          <widget class="QLineEdit" name="lineEdit_Byte04">
+           <property name="text">
+            <string>12</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>

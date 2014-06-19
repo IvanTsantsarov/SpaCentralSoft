@@ -2,102 +2,88 @@
 
 #include <QtNetwork/QNetworkConfigurationManager>
 #include <QMessageBox>
-#include <QTcpSocket>
 
-TcpServer::TcpServer(QMainWindow* mainWindow) :
-    QObject(mainWindow)
+#include "tcpserverthread.h"
+
+
+TcpServer::TcpServer(QString ipV4Address,
+                     quint16 port,
+                     QMainWindow* mainWindow) :
+    QTcpServer(mainWindow)
 {
+    bool isValidHostAddress = _hostAddress.setAddress(ipV4Address);
+    if (!isValidHostAddress) {
+        QString errorMessage = "Invalid IPv4 address: " + ipV4Address;
+        showErrorMessage(errorMessage);
+    }
+
+    _port = port;
     _mainWindow = mainWindow;
 }
 
 void TcpServer::start()
 {
-    QNetworkConfigurationManager networkConfigurationManager;
+    bool isListening = this->listen(_hostAddress, _port);
+    if (!isListening) {
+        QString errorMessage("Unable to start server at "
+                             + _hostAddress.toString()
+                             + ":"
+                             + QString::number(_port));
+        showErrorMessage(errorMessage);
 
-    QNetworkConfiguration networkConfiguration =
-            networkConfigurationManager.defaultConfiguration();
-
-    _networkSession = new QNetworkSession(networkConfiguration, this);
-
-    connect(_networkSession,
-            SIGNAL(opened()),
-            this,
-            SLOT(sessionOpened()));
-
-    qDebug() << "Opening network session";
-    _networkSession->open();
-
-    connect(_tcpServer,
-            SIGNAL(newConnection()),
-            this,
-            SLOT(sendData()));
-}
-
-void TcpServer::sessionOpened()
-{
-    if (_networkSession) {
-        QNetworkConfiguration networkConfiguration =
-                _networkSession->configuration();
-
-        QString id;
-
-        if (QNetworkConfiguration::UserChoice == networkConfiguration.type()) {
-            id = _networkSession->sessionProperty(QLatin1String("UserChoiceConfiguration"))
-                    .toString();
-        }
-        else {
-            id  = networkConfiguration.identifier();
-        }
-    }
-
-    _tcpServer = new QTcpServer(this);
-    if (!_tcpServer->listen()) {
-//        QMessageBox::critical(this,
-//                              "Test Server",
-//                              "Unable to start the server: %1.").arg(_tcpServer->errorString()));
-        qDebug() << "Unable to start the server: " + _tcpServer->errorString();
-
-        exit(-1);
         return;
     }
-
-    QString ipAddress;
-
-    QList<QHostAddress> ipAddressesList = QNetworkInterface::allAddresses();
-    // use the first non-localhost IPv4 address
-    for (int i = 0; ipAddressesList.size() > i; i++) {
-        if (ipAddressesList.at(i) != QHostAddress::LocalHost
-                && ipAddressesList.at(i).toIPv4Address()) {
-            ipAddress = ipAddressesList.at(i).toString();
-            break;
-        }
+    else {
+        emit serverStarted(_hostAddress.toString(), _port);
     }
-
-    if (ipAddress.isEmpty()) {
-        ipAddress = QHostAddress(QHostAddress::LocalHost).toString();
-    }
-
-    QString message;
-    message = "Server is running on IP:" + ipAddress + ":" + QString::number(_tcpServer->serverPort());
-
-    emit sessionOpened(message);
-    qDebug() << message;
 }
 
-void TcpServer::sendData() {
-    QByteArray dataBlock;
-    QDataStream out(&dataBlock, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_4_0);
-    out << "12345";
+void TcpServer::showErrorMessage(const QString& errorMessage)
+{
+    QMessageBox messageBox(_mainWindow);
+    messageBox.setWindowTitle("Server error");
+    messageBox.setIcon(QMessageBox::Critical);
+    messageBox.setText(errorMessage);
+    messageBox.setStandardButtons(QMessageBox::Abort);
 
-    QTcpSocket* clientConnection = _tcpServer->nextPendingConnection();
-    connect(clientConnection,
-            SIGNAL(disconnected()),
-            clientConnection,
-            SLOT(deleteLater()));
+    messageBox.exec(); // Show modal
 
-    qDebug() << "Data sent";
+    exit(-1);
+}
 
-    clientConnection->write(dataBlock);
-    clientConnection->disconnectFromHost();
+void TcpServer::incomingConnection(qintptr socketDescriptor)
+{
+    TcpServerThread*  tcpServerThread;
+    tcpServerThread = new TcpServerThread(socketDescriptor,
+                                          _sensorData,
+                                          this);
+    bool isOk;
+    isOk = connect(this, SIGNAL(finished()),
+                   tcpServerThread, SLOT(deleteLater()));
+    Q_ASSERT(isOk);
+    Q_UNUSED(isOk);
+
+    isOk = connect(tcpServerThread, SIGNAL(socketError(QTcpSocket::SocketError)),
+                   this, SLOT(onSocketError(QTcpSocket::SocketError)));
+    Q_ASSERT(isOk);
+    Q_UNUSED(isOk);
+
+    isOk = connect(tcpServerThread, SIGNAL(dataSent(SensorData)),
+                   this, SIGNAL(dataSent(SensorData)));
+    Q_ASSERT(isOk);
+    Q_UNUSED(isOk);
+
+    tcpServerThread->run();
+}
+
+void TcpServer::onSensorDataChanged(SensorData &sensorData)
+{
+    _sensorData = sensorData;
+}
+
+void TcpServer::onSocketError(QTcpSocket::SocketError socketError)
+{
+    QString errorMessage = "SocketError " + QString::number(socketError);
+
+    emit serverError(errorMessage);
 }
