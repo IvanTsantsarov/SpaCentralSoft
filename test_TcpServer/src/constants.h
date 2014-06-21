@@ -2,6 +2,6 @@
 #define CONSTANTS_H
 
 #define CUSTOM_SERVERADDRESS "127.0.0.1"
-#define CUSTOM_PORT 56789
+#define CUSTOM_PORT 5001
 
 #endif // CONSTANTS_H

@@ -33,7 +33,7 @@ public:
     void start();
 
 private:
-    void TcpClient::showErrorMessage(const QString& errorMessage);
+    void showErrorMessage(const QString& errorMessage);
 
 signals:
     void dataRecieved(quint8 sensorId, qreal temperatureCurrent);
@@ -41,6 +41,8 @@ signals:
 public slots:
     void requestData();
     void setData(quint8 sensorId, quint8 temperatureDesired);
+    void readData();
+    void displaySocketError(QAbstractSocket::SocketError socketError);
 };
 
 #endif // TCPCLIENT_H

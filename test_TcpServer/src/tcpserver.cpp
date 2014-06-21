@@ -58,7 +58,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
                                           _sensorData,
                                           this);
     bool isOk;
-    isOk = connect(this, SIGNAL(finished()),
+    isOk = connect(tcpServerThread, SIGNAL(finished()),
                    tcpServerThread, SLOT(deleteLater()));
     Q_ASSERT(isOk);
     Q_UNUSED(isOk);

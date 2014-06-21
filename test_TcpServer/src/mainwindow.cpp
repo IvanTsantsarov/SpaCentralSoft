@@ -57,7 +57,12 @@ MainWindow::MainWindow(QWidget *parent) :
     Q_ASSERT(isOk);
     Q_UNUSED(isOk);
 
-    _tcpServer->start();
+    isOk = connect(this,
+                   SIGNAL(sensorDataChanged(SensorData&)),
+                   _tcpServer,
+                   SLOT(onSensorDataChanged(SensorData&)));
+    Q_ASSERT(isOk);
+    Q_UNUSED(isOk);
 
     isOk = connect(this->ui->pushButton_SetData,
                    SIGNAL(clicked()),
@@ -65,6 +70,9 @@ MainWindow::MainWindow(QWidget *parent) :
                    SLOT(onClicked_pushButton_SetData()));
     Q_ASSERT(isOk);
     Q_UNUSED(isOk);
+
+    onClicked_pushButton_SetData();
+    _tcpServer->start();
 }
 
 MainWindow::~MainWindow()
