@@ -24,7 +24,7 @@ private:
     SensorData _sensorData;
 
 public:
-    explicit TcpServer(QString ipV4Address, quint16 port, QMainWindow* mainWindow = 0);
+    explicit TcpServer(QString ipV4Address, quint16 port, QMainWindow* mainWindow);
 
     void start();
 

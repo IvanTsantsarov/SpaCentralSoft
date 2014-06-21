@@ -20,6 +20,7 @@ SOURCES += src/main.cpp\
     src/tcpclient.cpp
 
 HEADERS  += src/mainwindow.h \
-    src/tcpclient.h
+    src/tcpclient.h \
+    src/structures.h
 
 FORMS    += src/forms/mainwindow.ui
