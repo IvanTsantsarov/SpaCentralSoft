@@ -14,18 +14,24 @@ private:
     qintptr _socketDescriptor;
     SensorData _sensorData;
 
+    QTcpSocket _tcpSocket;
+
 public:
     explicit TcpServerThread(qintptr socketDescriptor,
                              const SensorData& sensorData,
                              QObject* parent);
     void run();
+private:
+    void sendTemperatureCurrent();
+    void setTemperatureDesired(QByteArray& incommingCommandBlock);
 
 signals:
     void socketError(QTcpSocket::SocketError socketError);
-    void dataSent(SensorData sensorData);
+    void commandRecieved(quint8 sensorId, qreal temperatureDesired);
+    void commandSent(SensorData sensorData);
 
-public slots:
-
+private slots:
+    void onReadyRead();
 };
 
 #endif // TCPSERVERTHREAD_H

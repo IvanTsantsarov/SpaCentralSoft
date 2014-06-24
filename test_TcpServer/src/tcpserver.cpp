@@ -68,8 +68,13 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     Q_ASSERT(isOk);
     Q_UNUSED(isOk);
 
-    isOk = connect(tcpServerThread, SIGNAL(dataSent(SensorData)),
-                   this, SIGNAL(dataSent(SensorData)));
+    isOk = connect(tcpServerThread, SIGNAL(commandRecieved(quint8, qreal)),
+                   this, SIGNAL(commandReceived(quint8, qreal)));
+    Q_ASSERT(isOk);
+    Q_UNUSED(isOk);
+
+    isOk = connect(tcpServerThread, SIGNAL(commandSent(SensorData)),
+                   this, SIGNAL(commandSent(SensorData)));
     Q_ASSERT(isOk);
     Q_UNUSED(isOk);
 

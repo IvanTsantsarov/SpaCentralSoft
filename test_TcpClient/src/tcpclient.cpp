@@ -2,6 +2,7 @@
 
 #include <QMessageBox>
 #include <QString>
+#include <QtMath>
 
 TcpClient::TcpClient(QString ipV4Address,
                      quint16 port,
@@ -53,17 +54,52 @@ void TcpClient::showErrorMessage(const QString& errorMessage)
 void TcpClient::requestData()
 {
     qDebug() << "Connecting to host...";
+
+    if ( _sensorIds.count() - 1 < _currentSensorIdIndex) {
+        _currentSensorIdIndex = 0;
+    }
+
+    QByteArray outgoingCommandBlock;
+    outgoingCommandBlock.append('g');
+    outgoingCommandBlock.append(static_cast<char>(_sensorIds.at(_currentSensorIdIndex)));
+    outgoingCommandBlock.append(static_cast<char>(0));
+    outgoingCommandBlock.append(static_cast<char>(0));
+
+    qDebug() << outgoingCommandBlock.at(0)
+                << static_cast<quint8>(outgoingCommandBlock.at(1))
+                    << static_cast<qint8>(outgoingCommandBlock.at(2))
+                       << static_cast<quint8>(outgoingCommandBlock.at(3));
+
     _socket.abort();
-    _socket.connectToHost(_ipV4Address, _port);
+    _socket.connectToHost(_ipV4Address, _port, QIODevice::WriteOnly);
+    _socket.write(outgoingCommandBlock);
+
+    _currentSensorIdIndex++;
 }
 
-void TcpClient::setData(quint8 sensorId, quint8 temperatureDesired)
+void TcpClient::setData(quint8 sensorId, qreal temperatureDesired)
 {
     Q_UNUSED(sensorId);
     Q_UNUSED(temperatureDesired);
-    // TODO:
-//    _socket.abort;
-    //    _socket.connectToHost(_ipV4Address, _port);
+
+    int integerPart = qFloor(temperatureDesired);
+    int fractionalPart = (temperatureDesired - integerPart) * 100;
+
+    QByteArray outgoingCommandBlock;
+
+    outgoingCommandBlock.append('s');
+    outgoingCommandBlock.append(static_cast<char>(sensorId));
+    outgoingCommandBlock.append(static_cast<char>(integerPart));
+    outgoingCommandBlock.append(static_cast<char>(fractionalPart));
+
+    qDebug() << outgoingCommandBlock.at(0)
+                << static_cast<quint8>(outgoingCommandBlock.at(1))
+                    << static_cast<qint8>(outgoingCommandBlock.at(2))
+                       << static_cast<quint8>(outgoingCommandBlock.at(3));
+
+    _socket.abort();
+    _socket.connectToHost(_ipV4Address, _port, QIODevice::WriteOnly);
+    _socket.write(outgoingCommandBlock);
 }
 
 void TcpClient::readData()

@@ -13,7 +13,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
-public:
+private:
     TcpClient* _tcpClient;
     QList<quint8> _sensorIds;
 
@@ -23,6 +23,9 @@ public:
 
 private:
     Ui::MainWindow *ui;
+
+private slots:
+    void setTemperatureDesired();
 };
 
 #endif // MAINWINDOW_H

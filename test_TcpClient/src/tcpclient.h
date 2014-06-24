@@ -16,6 +16,7 @@ class TcpClient : public QObject
 private:
     QHostAddress _ipV4Address;
     quint16 _port;
+    int _currentSensorIdIndex = 0;
     QList<quint8> _sensorIds;
     quint32 _queryInterval;
     QTcpSocket _socket;
@@ -40,7 +41,7 @@ signals:
 
 public slots:
     void requestData();
-    void setData(quint8 sensorId, quint8 temperatureDesired);
+    void setData(quint8 sensorId, qreal temperatureDesired);
     void readData();
     void displaySocketError(QAbstractSocket::SocketError socketError);
 };

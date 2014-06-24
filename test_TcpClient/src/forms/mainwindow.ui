@@ -31,7 +31,7 @@
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>511</width>
+      <width>514</width>
       <height>311</height>
      </rect>
     </property>
@@ -100,6 +100,20 @@
         </spacer>
        </item>
        <item>
+        <widget class="QLabel" name="label_SensorId">
+         <property name="text">
+          <string>SensorId</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBox_SensorId">
+         <property name="currentText">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QLabel" name="label_TemperatureCurrent">
          <property name="text">
           <string>Current temperature</string>
@@ -107,7 +121,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEdit">
+        <widget class="QLineEdit" name="lineEdit_TemperatureCurrent">
          <property name="enabled">
           <bool>false</bool>
          </property>

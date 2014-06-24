@@ -34,7 +34,8 @@ signals:
 private slots:
     void onClicked_pushButton_SetData();
     void onServerStarted(QString ipV4Address, quint16 port);
-    void onDataSent(SensorData sensorData);
+    void onCommandReceived(quint8 sensorId, qreal temperatureDesired);
+    void onCommandSent(SensorData sensorData);
 };
 
 #endif // MAINWINDOW_H

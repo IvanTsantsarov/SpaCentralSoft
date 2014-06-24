@@ -51,9 +51,16 @@ MainWindow::MainWindow(QWidget *parent) :
     Q_UNUSED(isOk);
 
     isOk = connect(_tcpServer,
-                   SIGNAL(dataSent(SensorData)),
+                   SIGNAL(commandReceived(quint8,qreal)),
                    this,
-                   SLOT(onDataSent(SensorData)));
+                   SLOT(onCommandReceived(quint8,qreal)));
+    Q_ASSERT(isOk);
+    Q_UNUSED(isOk);
+
+    isOk = connect(_tcpServer,
+                   SIGNAL(commandSent(SensorData)),
+                   this,
+                   SLOT(onCommandSent(SensorData)));
     Q_ASSERT(isOk);
     Q_UNUSED(isOk);
 
@@ -109,7 +116,16 @@ void MainWindow::onServerStarted(QString ipV4Address, quint16 port)
     ui->textEdit_ConsoleOutput->append(message);
 }
 
-void MainWindow::onDataSent(SensorData sensorData)
+void MainWindow::onCommandReceived(quint8 sensorId, qreal temperatureDesired)
+{
+    QString consoleMessage = QString("Set: sensorId: %1, desired temperature: %2")
+            .arg(QString::number(sensorId), 3)
+            .arg(QString::number(temperatureDesired), 6);
+
+    ui->textEdit_ConsoleOutput->append(consoleMessage);
+}
+
+void MainWindow::onCommandSent(SensorData sensorData)
 {
     QString consoleMessage = QString("Data was sent: %1 %2 %3 %4")
             .arg(sensorData.byte01, 3)
