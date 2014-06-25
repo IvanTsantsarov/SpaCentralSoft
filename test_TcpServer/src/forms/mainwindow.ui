@@ -87,6 +87,36 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_BytesInput">
        <item>
+        <layout class="QVBoxLayout" name="verticalLayout_Byte00">
+         <item>
+          <widget class="QLabel" name="label_Byte00">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Byte 0 (Command)</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_Byte00">
+           <property name="text">
+            <string>s</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
         <layout class="QVBoxLayout" name="verticalLayout_Byte01">
          <item>
           <widget class="QLabel" name="label_Byte01">
@@ -97,7 +127,7 @@
             </font>
            </property>
            <property name="text">
-            <string>Byte 1 (Command)</string>
+            <string>Byte 1 (Port)</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -107,7 +137,7 @@
          <item>
           <widget class="QLineEdit" name="lineEdit_Byte01">
            <property name="text">
-            <string>s</string>
+            <string>235</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -127,7 +157,7 @@
             </font>
            </property>
            <property name="text">
-            <string>Byte 2 (Port)</string>
+            <string>Byte 2 (Integral)</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -137,7 +167,7 @@
          <item>
           <widget class="QLineEdit" name="lineEdit_Byte02">
            <property name="text">
-            <string>235</string>
+            <string>-12</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -157,7 +187,7 @@
             </font>
            </property>
            <property name="text">
-            <string>Byte 3 (tenths)</string>
+            <string>Byte 3 (Fractional)</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -166,36 +196,6 @@
          </item>
          <item>
           <widget class="QLineEdit" name="lineEdit_Byte03">
-           <property name="text">
-            <string>-12</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_Byte04">
-         <item>
-          <widget class="QLabel" name="label_Byte04">
-           <property name="font">
-            <font>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>Byte 4 (...)</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="lineEdit_Byte04">
            <property name="text">
             <string>12</string>
            </property>

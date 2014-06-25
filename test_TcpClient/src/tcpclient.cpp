@@ -23,18 +23,17 @@ TcpClient::TcpClient(QString ipV4Address,
     Q_ASSERT(isOk);
     Q_UNUSED(isOk);
 
-    isOk = connect(&_socket, SIGNAL(readyRead()),
+    isOk = connect(&_tcpSocket, SIGNAL(readyRead()),
                    this, SLOT(readData()));
     Q_ASSERT(isOk);
     Q_UNUSED(isOk);
 
-    isOk = connect(&_socket, SIGNAL(error(QAbstractSocket::SocketError)),
+    isOk = connect(&_tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)),
                    this, SLOT(displaySocketError(QAbstractSocket::SocketError)));
 }
 
 void TcpClient::start()
 {
-    qDebug() << "Timer";
     _timer.start(_queryInterval);
 }
 
@@ -47,8 +46,6 @@ void TcpClient::showErrorMessage(const QString& errorMessage)
     messageBox.setStandardButtons(QMessageBox::Abort);
 
     messageBox.exec(); // Show modal
-
-    //exit(-1);
 }
 
 void TcpClient::requestData()
@@ -70,9 +67,9 @@ void TcpClient::requestData()
                     << static_cast<qint8>(outgoingCommandBlock.at(2))
                        << static_cast<quint8>(outgoingCommandBlock.at(3));
 
-    _socket.abort();
-    _socket.connectToHost(_ipV4Address, _port, QIODevice::WriteOnly);
-    _socket.write(outgoingCommandBlock);
+    _tcpSocket.abort();
+    _tcpSocket.connectToHost(_ipV4Address, _port, QIODevice::ReadWrite);
+    _tcpSocket.write(outgoingCommandBlock);
 
     _currentSensorIdIndex++;
 }
@@ -97,26 +94,44 @@ void TcpClient::setData(quint8 sensorId, qreal temperatureDesired)
                     << static_cast<qint8>(outgoingCommandBlock.at(2))
                        << static_cast<quint8>(outgoingCommandBlock.at(3));
 
-    _socket.abort();
-    _socket.connectToHost(_ipV4Address, _port, QIODevice::WriteOnly);
-    _socket.write(outgoingCommandBlock);
+    _tcpSocket.abort();
+    _tcpSocket.connectToHost(_ipV4Address, _port, QIODevice::ReadWrite);
+    _tcpSocket.write(outgoingCommandBlock);
+    _tcpSocket.disconnectFromHost();
+    _tcpSocket.waitForDisconnected();
 }
 
 void TcpClient::readData()
 {
     QByteArray incommingDataBlock;
-    incommingDataBlock = _socket.read(4);
+    incommingDataBlock = _tcpSocket.readAll();
+
+    if (4 != incommingDataBlock.size()) {
+        return;
+    }
 
     SensorData sensorData;
-    sensorData.byte01 = static_cast<char>(incommingDataBlock.at(0));
-    sensorData.byte02 = static_cast<quint8>(incommingDataBlock.at(1));
-    sensorData.byte03 = static_cast<qint8>(incommingDataBlock.at(2));
+    sensorData.byte00 = static_cast<char>(incommingDataBlock.at(0));
+    sensorData.byte01 = static_cast<quint8>(incommingDataBlock.at(1));
+    sensorData.byte02 = static_cast<qint8>(incommingDataBlock.at(2));
     sensorData.byte03 = static_cast<quint8>(incommingDataBlock.at(3));
 
-    quint8 sensorId = sensorData.byte02;
-    qreal temperatureDesired = sensorData.byte03  + (sensorData.byte04 / 100);
+    quint8 sensorId = sensorData.byte01;
+    qreal realPart = static_cast<qreal>(sensorData.byte02);
+    qreal fractionalPart = static_cast<qreal>(sensorData.byte03) / 100;
+    qreal temperatureCurrent;
+    if (0 > realPart) {
+        temperatureCurrent = realPart - fractionalPart;
+    }
+    else {
+        temperatureCurrent = realPart + fractionalPart;
+    }
 
-    emit dataRecieved(sensorId, temperatureDesired);
+    qDebug() << "Received:" << sensorData.byte00 << sensorData.byte01 << sensorData.byte02 << sensorData.byte03;
+
+    emit dataReceived(sensorId, temperatureCurrent);
+    _tcpSocket.disconnectFromHost();
+    _tcpSocket.waitForDisconnected();
 }
 
 void TcpClient::displaySocketError(QAbstractSocket::SocketError socketError)
@@ -137,7 +152,7 @@ void TcpClient::displaySocketError(QAbstractSocket::SocketError socketError)
         break;
     default:
         QString errorMessage("The following error occured:");
-        errorMessage.append(_socket.errorString());
+        errorMessage.append(_tcpSocket.errorString());
         showErrorMessage(QString());
     }
 }

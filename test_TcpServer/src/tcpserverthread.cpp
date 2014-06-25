@@ -24,46 +24,43 @@ void TcpServerThread::run()
     }
     QByteArray dataBlock;
 
+    dataBlock.append(static_cast<char>(_sensorData.byte00));
     dataBlock.append(static_cast<char>(_sensorData.byte01));
     dataBlock.append(static_cast<char>(_sensorData.byte02));
     dataBlock.append(static_cast<char>(_sensorData.byte03));
-    dataBlock.append(static_cast<char>(_sensorData.byte04));
-
-    qDebug() << dataBlock.at(0);
-    qDebug() << static_cast<quint8>(dataBlock.at(1)) + 1;
-    qDebug() << static_cast<qint8>(dataBlock.at(2)) + 1;
-    qDebug() << static_cast<quint8>(dataBlock.at(3)) + 1;
 
     _tcpSocket.write(dataBlock);
     emit commandSent(_sensorData);
-    _tcpSocket.disconnectFromHost();
-    _tcpSocket.waitForDisconnected();
 }
 
 void TcpServerThread::sendTemperatureCurrent()
 {
     QByteArray outgoingCommandBlock;
 
+    outgoingCommandBlock.append(static_cast<char>(_sensorData.byte00));
     outgoingCommandBlock.append(static_cast<char>(_sensorData.byte01));
     outgoingCommandBlock.append(static_cast<char>(_sensorData.byte02));
     outgoingCommandBlock.append(static_cast<char>(_sensorData.byte03));
-    outgoingCommandBlock.append(static_cast<char>(_sensorData.byte04));
 
     _tcpSocket.write(outgoingCommandBlock);
     emit commandSent(_sensorData);
-    _tcpSocket.disconnectFromHost();
-    _tcpSocket.waitForDisconnected();
 }
 
 void TcpServerThread::setTemperatureDesired(QByteArray &incommingCommandBlock)
 {
     quint8 sensorId = static_cast<quint8>(incommingCommandBlock.at(1));
-    qint8 integralPart = static_cast<qint8>(incommingCommandBlock.at(2));
-    quint8 fractionalPart = static_cast<quint8>(incommingCommandBlock.at(3));
+    qreal integralPart = static_cast<qreal>(incommingCommandBlock.at(2));
+    qreal fractionalPart = static_cast<qreal>(incommingCommandBlock.at(3));
 
-    qreal temperatureDesired = integralPart + fractionalPart / 100;
+    qreal temperatureDesired;
+    if (0 > integralPart) {
+        temperatureDesired = integralPart - fractionalPart / 100;
+    }
+    else {
+        temperatureDesired = integralPart + fractionalPart / 100;
+    }
 
-    emit commandRecieved(sensorId, temperatureDesired);
+    emit temperatureDesiredChanged(sensorId, temperatureDesired);
 }
 
 void TcpServerThread::onReadyRead()

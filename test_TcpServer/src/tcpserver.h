@@ -37,7 +37,7 @@ protected:
 signals:
     void serverStarted(QString ipV4Address, quint16 port);
     void serverError(QString errorMessage);
-    void commandReceived(quint8 sensorId, qreal temperatureDesired);
+    void temperatureDesiredChanged(quint8 sensorId, qreal temperatureDesired);
     void commandSent(SensorData sensorData);
 
 public slots:

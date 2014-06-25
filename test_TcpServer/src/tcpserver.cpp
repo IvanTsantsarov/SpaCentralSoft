@@ -2,6 +2,7 @@
 
 #include <QtNetwork/QNetworkConfigurationManager>
 #include <QMessageBox>
+#include <QMutex>
 
 #include "tcpserverthread.h"
 
@@ -68,8 +69,8 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     Q_ASSERT(isOk);
     Q_UNUSED(isOk);
 
-    isOk = connect(tcpServerThread, SIGNAL(commandRecieved(quint8, qreal)),
-                   this, SIGNAL(commandReceived(quint8, qreal)));
+    isOk = connect(tcpServerThread, SIGNAL(temperatureDesiredChanged(quint8, qreal)),
+                   this, SIGNAL(temperatureDesiredChanged(quint8, qreal)));
     Q_ASSERT(isOk);
     Q_UNUSED(isOk);
 
@@ -81,9 +82,12 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     tcpServerThread->run();
 }
 
-void TcpServer::onSensorDataChanged(SensorData &sensorData)
+void TcpServer::onSensorDataChanged(SensorData& sensorData)
 {
+    QMutex mutex;
+    mutex.lock();
     _sensorData = sensorData;
+    mutex.unlock();
 }
 
 void TcpServer::onSocketError(QTcpSocket::SocketError socketError)

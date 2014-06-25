@@ -26,6 +26,7 @@ private:
 
 private slots:
     void setTemperatureDesired();
+    void onDataReceived(quint8 sensorId, qreal temperatureCurrent);
 };
 
 #endif // MAINWINDOW_H

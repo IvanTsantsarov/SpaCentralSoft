@@ -6,6 +6,7 @@
 #include <QIntValidator>
 
 #include <QMessageBox>
+#include <QTime>
 
 #include "constants.h"
 
@@ -20,18 +21,18 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QRegExp regExp_Byte01("[gsGS]");
-    QRegExpValidator* validator_Byte01 = new QRegExpValidator(regExp_Byte01, this);
+    QRegExp regExp_Byte00("[gsGS]");
+    QRegExpValidator* validator_Byte00 = new QRegExpValidator(regExp_Byte00, this);
+    ui->lineEdit_Byte00->setValidator(validator_Byte00);
+
+    QIntValidator* validator_Byte01 = new QIntValidator(0, 255, this);
     ui->lineEdit_Byte01->setValidator(validator_Byte01);
 
-    QIntValidator* validator_Byte02 = new QIntValidator(0, 255, this);
+    QIntValidator* validator_Byte02 = new QIntValidator(-100, 100, this);
     ui->lineEdit_Byte02->setValidator(validator_Byte02);
 
-    QIntValidator* validator_Byte03 = new QIntValidator(-100, 100, this);
+    QIntValidator* validator_Byte03= new QIntValidator(0, 99, this);
     ui->lineEdit_Byte03->setValidator(validator_Byte03);
-
-    QIntValidator* validator_Byte04 = new QIntValidator(0, 99, this);
-    ui->lineEdit_Byte04->setValidator(validator_Byte04);
 
     _tcpServer = new TcpServer(CUSTOM_SERVERADDRESS, CUSTOM_PORT, this);
     if (nullptr == _tcpServer) {
@@ -51,9 +52,9 @@ MainWindow::MainWindow(QWidget *parent) :
     Q_UNUSED(isOk);
 
     isOk = connect(_tcpServer,
-                   SIGNAL(commandReceived(quint8,qreal)),
+                   SIGNAL(temperatureDesiredChanged(quint8,qreal)),
                    this,
-                   SLOT(onCommandReceived(quint8,qreal)));
+                   SLOT(onTemperatureDesiredChanged(quint8,qreal)));
     Q_ASSERT(isOk);
     Q_UNUSED(isOk);
 
@@ -89,23 +90,23 @@ MainWindow::~MainWindow()
 
 void MainWindow::onClicked_pushButton_SetData()
 {
-    QString stringByte01 = ui->lineEdit_Byte01->text();
-    QString stringByte02 = ui->lineEdit_Byte02->text();
-    QString stringByte03 = ui->lineEdit_Byte03->text();
-    QString stringByte04 = ui->lineEdit_Byte04->text();
+    QString stringByte01 = ui->lineEdit_Byte00->text();
+    QString stringByte02 = ui->lineEdit_Byte01->text();
+    QString stringByte03 = ui->lineEdit_Byte02->text();
+    QString stringByte04 = ui->lineEdit_Byte03->text();
 
-    _sensorData.byte01 = stringByte01.at(0).toLatin1();
-    _sensorData.byte02 = (quint8) stringByte02.toUShort();
-    _sensorData.byte03 = (qint8) stringByte03.toShort();
-    _sensorData.byte04 = (quint8) stringByte04.toShort();
+    _sensorData.byte00 = stringByte01.at(0).toLatin1();
+    _sensorData.byte01 = static_cast<quint8>(stringByte02.toUShort());
+    _sensorData.byte02 = static_cast<qint8>(stringByte03.toShort());
+    _sensorData.byte03 = static_cast<quint8>(stringByte04.toShort());
 
     emit sensorDataChanged(_sensorData);
 
     QString consoleMessage = QString("New data set: %1 %2 %3 %4")
+            .arg(_sensorData.byte00, 3)
             .arg(_sensorData.byte01, 3)
             .arg(_sensorData.byte02, 3)
-            .arg(_sensorData.byte03, 3)
-            .arg(_sensorData.byte04, 3);
+            .arg(_sensorData.byte03, 3);
 
     ui->textEdit_ConsoleOutput->append(consoleMessage);
 }
@@ -116,22 +117,23 @@ void MainWindow::onServerStarted(QString ipV4Address, quint16 port)
     ui->textEdit_ConsoleOutput->append(message);
 }
 
-void MainWindow::onCommandReceived(quint8 sensorId, qreal temperatureDesired)
+void MainWindow::onTemperatureDesiredChanged(quint8 sensorId, qreal temperatureDesired)
 {
     QString consoleMessage = QString("Set: sensorId: %1, desired temperature: %2")
-            .arg(QString::number(sensorId), 3)
-            .arg(QString::number(temperatureDesired), 6);
+            .arg(sensorId, 3)
+            .arg(temperatureDesired, 6);
 
     ui->textEdit_ConsoleOutput->append(consoleMessage);
 }
 
 void MainWindow::onCommandSent(SensorData sensorData)
 {
-    QString consoleMessage = QString("Data was sent: %1 %2 %3 %4")
+    QString consoleMessage = QString("%1: Data was sent: %2 %3 %4 %5")
+            .arg(QTime::currentTime().toString())
+            .arg(sensorData.byte00, 3)
             .arg(sensorData.byte01, 3)
             .arg(sensorData.byte02, 3)
-            .arg(sensorData.byte03, 3)
-            .arg(sensorData.byte04, 3);
+            .arg(sensorData.byte03, 3);
 
     ui->textEdit_ConsoleOutput->append(consoleMessage);
 }

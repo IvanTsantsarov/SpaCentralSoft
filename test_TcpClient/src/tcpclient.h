@@ -19,7 +19,7 @@ private:
     int _currentSensorIdIndex = 0;
     QList<quint8> _sensorIds;
     quint32 _queryInterval;
-    QTcpSocket _socket;
+    QTcpSocket _tcpSocket;
     QMainWindow* _mainWindow;
     QTimer _timer;
 
@@ -37,7 +37,7 @@ private:
     void showErrorMessage(const QString& errorMessage);
 
 signals:
-    void dataRecieved(quint8 sensorId, qreal temperatureCurrent);
+    void dataReceived(quint8 sensorId, qreal temperatureCurrent);
 
 public slots:
     void requestData();

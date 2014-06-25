@@ -75,7 +75,11 @@
       </layout>
      </item>
      <item>
-      <widget class="QTextEdit" name="textEdit_OutputConsole"/>
+      <widget class="QTextEdit" name="textEdit_OutputConsole">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_Status">
