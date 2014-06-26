@@ -107,7 +107,7 @@
          <item>
           <widget class="QLineEdit" name="lineEdit_Byte00">
            <property name="text">
-            <string>s</string>
+            <string/>
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -135,12 +135,12 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="lineEdit_Byte01">
-           <property name="text">
-            <string>235</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          <widget class="QComboBox" name="comboBox_Byte01">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
            </property>
           </widget>
          </item>
@@ -167,7 +167,7 @@
          <item>
           <widget class="QLineEdit" name="lineEdit_Byte02">
            <property name="text">
-            <string>-12</string>
+            <string/>
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -197,7 +197,7 @@
          <item>
           <widget class="QLineEdit" name="lineEdit_Byte03">
            <property name="text">
-            <string>12</string>
+            <string/>
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

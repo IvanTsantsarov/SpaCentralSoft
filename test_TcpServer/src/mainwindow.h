@@ -4,6 +4,7 @@
 #include "tcpserver.h"
 
 #include <QMainWindow>
+#include <QList>
 #include <QString>
 #include <QDebug>
 
@@ -18,7 +19,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 private:
-    SensorData _sensorData;
+    QList<SensorData> _sensors;
     TcpServer* _tcpServer;
 
 public:
@@ -28,6 +29,10 @@ public:
 private:
     Ui::MainWindow *ui;
 
+    void addSensor(const SensorData& sensorData);
+    void setSensor(const SensorData& sensorData);
+    void setLabels(const SensorData& sensorData);
+
 signals:
     void sensorDataChanged(SensorData& sensorData);
 
@@ -36,6 +41,7 @@ private slots:
     void onServerStarted(QString ipV4Address, quint16 port);
     void onTemperatureDesiredChanged(quint8 sensorId, qreal temperatureDesired);
     void onCommandSent(SensorData sensorData);
+    void on_comboBox_Byte01_currentIndexChanged(int index);
 };
 
 #endif // MAINWINDOW_H

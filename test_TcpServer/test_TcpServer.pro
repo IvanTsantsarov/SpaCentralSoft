@@ -22,7 +22,6 @@ SOURCES += src/main.cpp\
 
 HEADERS  += src/mainwindow.h \
     src/tcpserver.h \
-    src/utilities.h \
     src/structures.h \
     src/constants.h \
     src/tcpserverthread.h

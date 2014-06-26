@@ -9,10 +9,6 @@
 
 #include "structures.h"
 
-//extern "C" {
-//    #include "utilities.h"
-//}
-
 class TcpServer : public QTcpServer
 {
     Q_OBJECT
