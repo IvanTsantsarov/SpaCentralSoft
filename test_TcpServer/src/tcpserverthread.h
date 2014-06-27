@@ -28,6 +28,7 @@ private:
 signals:
     void socketError(QTcpSocket::SocketError socketError);
     void temperatureDesiredChanged(quint8 sensorId, qreal temperatureDesired);
+    void temperatureDesiredChanged(SensorData sensorData);
     void commandSent(SensorData sensorData);
 
 private slots:

@@ -39,18 +39,11 @@ private:
     CGraphicsRectItem* _graphicsRectItem;
     QGraphicsTextItem* _graphicsTextItem;
 
-private:
-
 public:
-
-#ifndef USE_OBSOLETE
     explicit TemperatureIndicator(IndicatorProperties indicatorProperties,
                                   ProgramSettings programSettings,
                                   QListWidget* listWidget,
                                   QObject* parent = 0);
-#else
-    explicit TemperatureIndicator(QString text, QString imageFileName, QListWidget* listWidget, QObject* parent = 0);
-#endif // USE_OBSOLETE
 
     CGraphicsRectItem* getGraphicsRectItem() const;
     QString text() const; 
@@ -71,6 +64,7 @@ public:
 signals:
     void selected();
     void doubleClicked(QGraphicsSceneMouseEvent* event);
+
 public slots:
     void onSelected();
 };

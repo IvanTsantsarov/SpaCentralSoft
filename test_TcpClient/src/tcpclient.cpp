@@ -130,6 +130,7 @@ void TcpClient::readData()
     qDebug() << "Received:" << sensorData.byte00 << sensorData.byte01 << sensorData.byte02 << sensorData.byte03;
 
     emit dataReceived(sensorId, temperatureCurrent);
+    emit dataReceived(sensorData);
     _tcpSocket.disconnectFromHost();
     _tcpSocket.waitForDisconnected();
 }

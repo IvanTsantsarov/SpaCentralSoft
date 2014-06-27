@@ -8,7 +8,8 @@ struct SensorData
     qint8 byte02;
     quint8 byte03;
 
-    SensorData() {
+    SensorData()
+    {
     }
 
     SensorData(char byte00, quint8 byte01, qint8 byte02, quint8 byte03)

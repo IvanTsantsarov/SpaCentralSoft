@@ -145,7 +145,11 @@ void ConfigLoader::parseProgramSettings(QDomElement& element)
 
     QDomElement currentElement;
 
-    currentElement = this->firstChildElement("language", element);
+    currentElement = this->firstChildElement("server", element);
+    _programSettings.server.ipV4Address = getAttributeValue("ipV4Address", currentElement);
+    _programSettings.server.port = getAttributeValue("port", currentElement).toInt();
+
+    currentElement = this->nextSiblingElement("language", currentElement);
     _programSettings.language = getAttributeValue("value", currentElement);
 
     currentElement = this->nextSiblingElement("assets", currentElement);

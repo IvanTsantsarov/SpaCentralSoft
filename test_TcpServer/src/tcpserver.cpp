@@ -4,6 +4,8 @@
 #include <QMessageBox>
 #include <QMutex>
 
+#include <QThreadPool>
+
 #include "tcpserverthread.h"
 
 
@@ -71,6 +73,11 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
 
     isOk = connect(tcpServerThread, SIGNAL(temperatureDesiredChanged(quint8, qreal)),
                    this, SIGNAL(temperatureDesiredChanged(quint8, qreal)));
+    Q_ASSERT(isOk);
+    Q_UNUSED(isOk);
+
+    isOk = connect(tcpServerThread, SIGNAL(temperatureDesiredChanged(SensorData)),
+                   this, SIGNAL(temperatureDesiredChanged(SensorData)));
     Q_ASSERT(isOk);
     Q_UNUSED(isOk);
 

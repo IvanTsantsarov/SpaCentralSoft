@@ -15,10 +15,3 @@ void CGraphicsScene::mousePressEvent (QGraphicsSceneMouseEvent* mouseEvent)
     m_mainWindow->selectTemperatureIndicator(point);
     QGraphicsScene::mousePressEvent(mouseEvent);
 }
-
-void CGraphicsScene::mouseReleaseEvent (QGraphicsSceneMouseEvent* mouseEvent)
-{
-    QPointF point = mouseEvent->scenePos();
-    qDebug() << "Mouse release event at x: " << point.x() << " y: " << point.y();
-    QGraphicsScene::mouseReleaseEvent(mouseEvent);
-}

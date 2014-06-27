@@ -9,12 +9,14 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    _sensorIds.push_back(CUSTOM_SENSOR01);
-    _sensorIds.push_back(CUSTOM_SENSOR02);
-    _sensorIds.push_back(CUSTOM_SENSOR03);
+    _sensors.push_back(Sensor(SensorData('s', CUSTOM_SENSOR01, 0, 0), 25.5));
+    _sensors.push_back(Sensor(SensorData('s', CUSTOM_SENSOR02, 0, 0), 27.5));
+    _sensors.push_back(Sensor(SensorData('s', CUSTOM_SENSOR03, 0, 0), 28.5));
 
-    for (auto sensor: _sensorIds) {
-        ui->comboBox_SensorId->addItem(QString::number(sensor), sensor);
+    for (Sensor sensor: _sensors) {
+        ui->comboBox_SensorId->addItem(QString::number(sensor.sensorData.byte01),
+                                       sensor.sensorData.byte01);
+        _sensorIds.push_back(sensor.sensorData.byte01);
     }
 
     _tcpClient = new TcpClient(CUSTOM_IPV4ADDRESS,
@@ -24,13 +26,25 @@ MainWindow::MainWindow(QWidget *parent) :
                                this);
 
     bool isOk;
+    // TcpClient: Connections
+    isOk = connect(_tcpClient, SIGNAL(dataReceived(quint8, qreal)),
+                   this, SLOT(onDataReceived(quint8, qreal)));
+    Q_ASSERT(isOk);
+    Q_UNUSED(isOk);
+
+    isOk = connect(_tcpClient, SIGNAL(dataReceived(SensorData)),
+                   this, SLOT(onDataReceived(SensorData)));
+    Q_ASSERT(isOk);
+    Q_UNUSED(isOk);
+
+    // GUI: Connections
     isOk = connect(ui->pushButton_TemperatureSet, SIGNAL(clicked()),
                    this, SLOT(setTemperatureDesired()));
     Q_ASSERT(isOk);
     Q_UNUSED(isOk);
 
-    isOk = connect(_tcpClient, SIGNAL(dataReceived(quint8, qreal)),
-                   this, SLOT(onDataReceived(quint8, qreal)));
+    isOk = connect(ui->comboBox_SensorId, SIGNAL(currentIndexChanged(int)),
+                   this, SLOT(on_comboBox_SensorId_currentIndexChanged(int)));
     Q_ASSERT(isOk);
     Q_UNUSED(isOk);
 
@@ -40,6 +54,35 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::setSensor(SensorData sensorData)
+{
+    for (Sensor currentSensor: _sensors) {
+        if (currentSensor.sensorData.byte01 == sensorData.byte01) {
+            currentSensor.sensorData.byte00 = sensorData.byte00;
+            currentSensor.sensorData.byte02 = sensorData.byte02;
+            currentSensor.sensorData.byte03 = sensorData.byte03;
+        }
+    }
+
+    if (ui->comboBox_SensorId->currentData().toInt()
+            == sensorData.byte01) {
+
+        qint8 integralPart = sensorData.byte02;
+        quint8 fractionalPart = sensorData.byte03;
+
+        qreal temperatureCurrent;
+
+        if (0 > integralPart) {
+            temperatureCurrent = integralPart - fractionalPart / 100;
+        }
+        else {
+            temperatureCurrent = integralPart + fractionalPart / 100;
+        }
+
+        ui->lineEdit_TemperatureCurrent->setText(QString::number(temperatureCurrent));
+    }
 }
 
 void MainWindow::setTemperatureDesired()
@@ -55,4 +98,34 @@ void MainWindow::onDataReceived(quint8 sensorId, qreal temperatureCurrent)
             .arg(temperatureCurrent);
 
     ui->textEdit_OutputConsole->append(consoleMessage);
+}
+
+void MainWindow::onDataReceived(SensorData sensorData)
+{
+    setSensor(sensorData);
+}
+
+void MainWindow::on_comboBox_SensorId_currentIndexChanged(int index)
+{
+    for (int currentSensorIndex = 0;
+         _sensors.count() > currentSensorIndex;
+         currentSensorIndex++) {
+        if (qvariant_cast<quint8>(ui->comboBox_SensorId->itemData(index))
+                == _sensors.at(currentSensorIndex).sensorData.byte01) {
+            qint8 integralPart = _sensors.at(currentSensorIndex).sensorData.byte02;
+            quint8 fractionalPart = _sensors.at(currentSensorIndex).sensorData.byte03;
+
+            qreal temperatureCurrent;
+
+            if (0 > integralPart) {
+                temperatureCurrent = integralPart - fractionalPart / 100;
+            }
+            else {
+                temperatureCurrent = integralPart + fractionalPart / 100;
+            }
+
+            ui->lineEdit_TemperatureCurrent->setText(QString::number(temperatureCurrent));
+            ui->doubleSpinBox_TemperatureSet->setValue(_sensors.at(currentSensorIndex).tempetaruteDesired);
+        }
+    }
 }

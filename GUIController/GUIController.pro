@@ -11,6 +11,7 @@ DEFINES += USE_GRAPHICSRECTITEM_ZONE
 
 QT += core gui
 QT += xml
+QT += network
 
 QMAKE_CXXFLAGS += -std=c++11
 
@@ -74,8 +75,11 @@ OTHER_FILES += \
 ## If using normal build (non-Shadow) that would have worked as well.
 #CONFIG(release, debug|release): DESTDIR = release
 #CONFIG(debug, debug|release): DESTDIR = debug
+#
+# Finally add "make install" as a post-build step
 
 CONFIG += copy_dir_files # Enables the install rule to also copy directories, not just files
+CONFIG += no_check_exist
 
 assets.path = $$DESTDIR/assets
 assets.files +=$$files(assets/*.*)
@@ -88,3 +92,9 @@ INSTALLS += assetsImagesDark
 assetsImagesLight.path = $$DESTDIR/assets/light
 assetsImagesLight.files +=$$files(assets/light/*.*)
 INSTALLS += assetsImagesLight
+
+#copydata.commands = $(COPY_DIR) $$PWD/assets $$DESTDIR
+#first.depends = $(first) copydata
+#export(first.depends)
+#export(copydata.commands)
+#QMAKE_EXTRA_TARGETS += first copydata

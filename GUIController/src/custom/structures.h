@@ -7,6 +7,12 @@
 
 struct ProgramSettings
 {
+    struct Server
+    {
+        QString ipV4Address;
+        int port;
+    } server;
+
     QString language;
     QString assetsPath;
     QString backgroundImageFileName;

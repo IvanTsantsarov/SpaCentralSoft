@@ -14,7 +14,6 @@ private:
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent);
 
 public:
     CGraphicsScene(MainWindow* mainWindow);

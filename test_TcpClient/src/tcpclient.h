@@ -38,6 +38,7 @@ private:
 
 signals:
     void dataReceived(quint8 sensorId, qreal temperatureCurrent);
+    void dataReceived(SensorData sensorData);
 
 public slots:
     void requestData();

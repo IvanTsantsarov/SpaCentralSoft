@@ -48,6 +48,7 @@ void TcpServerThread::sendTemperatureCurrent()
 
 void TcpServerThread::setTemperatureDesired(QByteArray &incommingCommandBlock)
 {
+    char command = incommingCommandBlock.at(0);
     quint8 sensorId = static_cast<quint8>(incommingCommandBlock.at(1));
     qreal integralPart = static_cast<qreal>(incommingCommandBlock.at(2));
     qreal fractionalPart = static_cast<qreal>(incommingCommandBlock.at(3));
@@ -60,7 +61,10 @@ void TcpServerThread::setTemperatureDesired(QByteArray &incommingCommandBlock)
         temperatureDesired = integralPart + fractionalPart / 100;
     }
 
+    SensorData sensorData(command, sensorId, integralPart, fractionalPart);
+
     emit temperatureDesiredChanged(sensorId, temperatureDesired);
+    emit temperatureDesiredChanged(sensorData);
 }
 
 void TcpServerThread::onReadyRead()

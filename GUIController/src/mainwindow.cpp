@@ -1,6 +1,7 @@
 #include <QString>
 #include <QGraphicsItem>
 #include <QGraphicsSceneMouseEvent>
+#include <QtNetwork/QHostAddress>
 
 #include <QDebug>
 
@@ -28,15 +29,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->graphicsView->setScene(_scene);
 
-#ifndef USE_OBSOLETE
     QString imageFilePath = ASSETS_PATH + _programSettings.backgroundImageFileName;
     QImage imageBackgroundImage(ASSETS_PATH + _programSettings.backgroundImageFileName);
     if (imageBackgroundImage.isNull()) {
         qDebug() << "Background image failed to load: " + imageFilePath;
     }
-#else
-    QImage imageBackgroundImage(ASSETS_BMP_MAP);
-#endif  // USE_OBSOLETE
 
     ui->graphicsView->setBackgroundBrush(QBrush(QColor(50, 50, 50)));
 
@@ -46,7 +43,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     _listIndicatorProperties = configLoader.getIndicatorProperties();
 
-#ifndef USE_OBSOLETE
     for (IndicatorProperties currentIndicatorProperties: _listIndicatorProperties) {
         TemperatureIndicator* temperatureIndicator = new TemperatureIndicator(currentIndicatorProperties,
                                                                               _programSettings,
@@ -71,71 +67,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     _currentTemperatureIndicator = _temperatureIndicators[0];
     _currentTemperatureIndicator->setIndicatorSelected(true);
-#else
-    QString path("dark");
-
-    // Create the TemperatureIndicators
-    TemperatureIndicator* ti1 = new TemperatureIndicator("Sauna 1/Сауна 1", "assets/" + path + "/zone1.png", ui->listWidget, _scene);
-    _temperatureIndicators.push_back(ti1);
-    QPointF point1(555, 273);
-    ti1->setPosition(point1);
-    ti1->setConnected(true);
-    ti1->update();
-
-    TemperatureIndicator* ti2 = new TemperatureIndicator("Sauna 2/Сауна 2", "assets/" + path + "/zone2.png", ui->listWidget,_scene);
-    _temperatureIndicators.push_back(ti2);
-    QPointF point2(830, 200);
-    ti2->setPosition(point2);
-    ti2->setSensorState(SensorState::Disconnected);
-    ti2->update();
-
-    TemperatureIndicator* ti3 = new TemperatureIndicator("Pool/Басейн", "assets/" + path + "/zone3.png", ui->listWidget,_scene);
-    _temperatureIndicators.push_back(ti3);
-    QPointF point3(1165, 269);
-    ti3->setPosition(point3);
-    ti3->setSensorState(SensorState::TemperatureNormal);
-    ti3->update();
-
-    TemperatureIndicator* ti4 = new TemperatureIndicator("Massage 1/Масаж 1", "assets/" + path + "/zone4.png", ui->listWidget,_scene);
-    _temperatureIndicators.push_back(ti4);
-    QPointF point4(1152, 490);
-    ti4->setPosition(point4);
-    ti4->setSensorState(SensorState::TemperatureHigher);
-    ti4->update();
-
-    TemperatureIndicator* ti5 = new TemperatureIndicator("Massage 2/Масаж 2", "assets/" + path + "/zone5.png", ui->listWidget,_scene);
-    _temperatureIndicators.push_back(ti5);
-    QPointF point5(688, 663);
-    ti5->setPosition(point5);
-    ti5->setSensorState(SensorState::TemperatureLower);
-    ti5->update();
-
-    TemperatureIndicator* ti6 = new TemperatureIndicator("Hydromassage 1/Хидро Масаж 1", "assets/" + path + "/zone6.png", ui->listWidget,_scene);
-    _temperatureIndicators.push_back(ti6);
-    QPointF point6(903, 645);
-    ti6->setPosition(point6);
-    ti6->update();
-
-    TemperatureIndicator* ti7 = new TemperatureIndicator("Hydromassage 2/Хидро Масаж 2", "assets/" + path + "/zone7.png", ui->listWidget,_scene);
-    _temperatureIndicators.push_back(ti7);
-    QPointF point7(1094, 824);
-    ti7->setPosition(point7);
-    ti7->update();
-
-    bool isOk;
-    for(auto indicator: _temperatureIndicators) {
-        isOk = connect(indicator,
-                       SIGNAL(doubleClicked(QGraphicsSceneMouseEvent*)),
-                       this,
-                       SLOT(onTemperatureIndicatorDoubleClicked(QGraphicsSceneMouseEvent*)));
-        Q_ASSERT(isOk);
-        Q_UNUSED(isOk);
-    }
-
-    _currentTemperatureIndicator = ti1;
-    _currentTemperatureIndicator->setIndicatorSelected(true);
-
-#endif // USE_OBSOLETE
 
     // Connect QListWidget to TemperatureIndicators
     isOk = connect(ui->listWidget,
@@ -151,7 +82,64 @@ MainWindow::MainWindow(QWidget *parent) :
                    SLOT(onListWidgetItemDoubleClicked(QListWidgetItem*)));
     Q_ASSERT(isOk);
     Q_UNUSED(isOk);
+
+
+    connect(&_socket, SIGNAL(readyRead()), this, SLOT(onDataRecieved()) );
+    connect(&_socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()) );
+
+    _socket.connectToHost(_programSettings.server.ipV4Address,
+                          _programSettings.server.port);
+
+    qDebug() << "Local address" << QString("%1:%2").arg(_socket.localAddress().toString())
+                                           .arg(_socket.localPort());
+    qDebug() << "Peer address:" << QString("%1:%2").arg(_socket.peerAddress().toString())
+                                           .arg(_socket.localPort());
+//    _socket.connectToHost(CUSTOM_IPV4ADDRESS, CUSTOM_PORT);
+//    if( !_socket.waitForConnected(-1))
+//    {
+//        qDebug()<< "Error connecting!";
+//    }
 }
+
+void MainWindow::onDataRecieved()
+{
+    QByteArray data = _socket.readAll();
+    qDebug()<< QString::fromLatin1(data.toHex(), data.size());
+
+    char cmd = data[0];
+    //char id = data[1];
+
+    switch(cmd)
+    {
+    case 'G':
+        qDebug()<< "GET";
+
+        _socket.write(QByteArray("g000"));
+        break;
+    case 'S':
+        qDebug()<< "SET";
+        _socket.write(QByteArray("s000"));
+        break;
+    case 'E':
+        qDebug()<< "ERROR";
+        _socket.write(QByteArray("e000"));
+        break;
+    default:
+        qDebug()<< "Error:Unknown command byte!";
+    }
+}
+
+void MainWindow::onDisconnected()
+{
+    qDebug() << "Disconnected!";
+    _socket.connectToHost(_programSettings.server.ipV4Address,
+                          _programSettings.server.port);
+//    if( !_socket.waitForConnected(-1))
+//    {
+//        qDebug()<< "Error connecting!";
+//    }
+}
+
 
 MainWindow::~MainWindow()
 {

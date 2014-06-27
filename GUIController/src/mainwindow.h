@@ -2,8 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QtNetwork/QTcpSocket>
 
-//#include "custom/structures.h"
 #include "configloader.h"
 #include "cgraphicsscene.h"
 #include "temperatureindicator.h"
@@ -21,6 +21,8 @@ class MainWindow : public QMainWindow
 
 private:
     Ui::MainWindow* ui;
+
+    QTcpSocket _socket;
 
     ProgramSettings _programSettings;
     QList<IndicatorProperties> _listIndicatorProperties;
@@ -45,6 +47,8 @@ private slots:
     void onListWidgetItemDoubleClicked(QListWidgetItem* item);
     void onTemperatureIndicatorDoubleClicked(QGraphicsSceneMouseEvent* event);
 
+    void onDataRecieved();
+    void onDisconnected();
 };
 
 #endif // MAINWINDOW_H
