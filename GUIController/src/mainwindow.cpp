@@ -2,6 +2,7 @@
 #include <QGraphicsItem>
 #include <QGraphicsSceneMouseEvent>
 #include <QtNetwork/QHostAddress>
+#include <QMessageBox>
 
 #include <QDebug>
 
@@ -19,7 +20,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
-{
+{  
     ConfigLoader configLoader(CONFIG_FILE, this);
     _programSettings = configLoader.getProgramSettings();
 
@@ -44,10 +45,11 @@ MainWindow::MainWindow(QWidget *parent) :
     _listIndicatorProperties = configLoader.getIndicatorProperties();
 
     for (IndicatorProperties currentIndicatorProperties: _listIndicatorProperties) {
-        TemperatureIndicator* temperatureIndicator = new TemperatureIndicator(currentIndicatorProperties,
-                                                                              _programSettings,
-                                                                              ui->listWidget,
-                                                                              _scene);
+        TemperatureIndicator* temperatureIndicator =
+                new TemperatureIndicator(currentIndicatorProperties,
+                                         _programSettings,
+                                         ui->listWidget,
+                                         _scene);
         temperatureIndicator->setPosition(currentIndicatorProperties.position);
         temperatureIndicator->setSensorState(SensorState::Disconnected);
         temperatureIndicator->update();
@@ -84,62 +86,21 @@ MainWindow::MainWindow(QWidget *parent) :
     Q_UNUSED(isOk);
 
 
-    connect(&_socket, SIGNAL(readyRead()), this, SLOT(onDataRecieved()) );
-    connect(&_socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()) );
+    connectSocket();
 
-    _socket.connectToHost(_programSettings.server.ipV4Address,
-                          _programSettings.server.port);
+    connect(_socket, SIGNAL(readyRead()), this, SLOT(onDataRecieved()) );
+    connect(_socket, SIGNAL(connected()), this, SLOT(onConnected()) );
+    connect(_socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()) );
+    connect(_socket, SIGNAL(error(QAbstractSocket::SocketError)),
+            this, SLOT(onErrorSocket(QAbstractSocket::SocketError)));
 
-    qDebug() << "Local address" << QString("%1:%2").arg(_socket.localAddress().toString())
-                                           .arg(_socket.localPort());
-    qDebug() << "Peer address:" << QString("%1:%2").arg(_socket.peerAddress().toString())
-                                           .arg(_socket.localPort());
-//    _socket.connectToHost(CUSTOM_IPV4ADDRESS, CUSTOM_PORT);
-//    if( !_socket.waitForConnected(-1))
-//    {
-//        qDebug()<< "Error connecting!";
-//    }
+
+
+    qDebug() << "Local address" << QString("%1:%2").arg(_socket->localAddress().toString())
+                                           .arg(_socket->localPort());
+    qDebug() << "Peer address:" << QString("%1:%2").arg(_socket->peerAddress().toString())
+                                           .arg(_socket->localPort());
 }
-
-void MainWindow::onDataRecieved()
-{
-    QByteArray data = _socket.readAll();
-    qDebug()<< QString::fromLatin1(data.toHex(), data.size());
-
-    char cmd = data[0];
-    //char id = data[1];
-
-    switch(cmd)
-    {
-    case 'G':
-        qDebug()<< "GET";
-
-        _socket.write(QByteArray("g000"));
-        break;
-    case 'S':
-        qDebug()<< "SET";
-        _socket.write(QByteArray("s000"));
-        break;
-    case 'E':
-        qDebug()<< "ERROR";
-        _socket.write(QByteArray("e000"));
-        break;
-    default:
-        qDebug()<< "Error:Unknown command byte!";
-    }
-}
-
-void MainWindow::onDisconnected()
-{
-    qDebug() << "Disconnected!";
-    _socket.connectToHost(_programSettings.server.ipV4Address,
-                          _programSettings.server.port);
-//    if( !_socket.waitForConnected(-1))
-//    {
-//        qDebug()<< "Error connecting!";
-//    }
-}
-
 
 MainWindow::~MainWindow()
 {
@@ -153,7 +114,11 @@ void MainWindow::showDialogChangeTemperature()
     bool temperatureIndicatorFunctional = _currentTemperatureIndicator->isSensorFunctional();
     QString dialogTitle = _currentTemperatureIndicator->text();
 
-    DialogChangeTemperature dialogChangeTemperature(this, dialogTitle, temperatureIndicatorFunctional, temperatureDesired, temperatureCurrent);
+    DialogChangeTemperature dialogChangeTemperature(this,
+                                                    dialogTitle,
+                                                    temperatureIndicatorFunctional,
+                                                    temperatureDesired,
+                                                    temperatureCurrent);
 
     // Remove ? from TitleBar
     Qt::WindowFlags windowFlags = dialogChangeTemperature.windowFlags();
@@ -180,14 +145,14 @@ void MainWindow::selectTemperatureIndicator(QPointF point)
 
     while(iteratorItems.hasNext())
     {
-       // item = static_cast<QGraphicsItem*>(iteratorItems.next());
         item = qgraphicsitem_cast<QGraphicsItem*>(iteratorItems.next());
 
         if (CGraphicsRectItem::Type == item->type()) {
-            //rectItem = static_cast<CGraphicsRectItem*>(item);
             rectItem = qgraphicsitem_cast<CGraphicsRectItem*>(item);
 
-            qDebug() << "Clicked CGraphicsRectItem at: " + QString::number(rectItem->x()) + ", " + QString::number(rectItem->x());
+            qDebug() << "Clicked CGraphicsRectItem at: "
+                        + QString::number(rectItem->x()) + ", "
+                        + QString::number(rectItem->x());
             break;
         }
     }
@@ -243,4 +208,79 @@ void MainWindow::onTemperatureIndicatorDoubleClicked(QGraphicsSceneMouseEvent *e
     }
 
     showDialogChangeTemperature();
+}
+
+
+// Connection
+void MainWindow::connectSocket()
+{
+    Q_ASSERT(_socket == nullptr);
+
+    _socket = new QTcpSocket();
+    _socket->connectToHost(_programSettings.server.ipV4Address,
+                           _programSettings.server.port);
+}
+
+void MainWindow::sendTemperatureDesired()
+{
+    //ui->
+}
+
+// Private slots
+void MainWindow::onDataRecieved()
+{
+    QByteArray data = _socket->readAll();
+    qDebug()<< QString::fromLatin1(data.toHex(), data.size());
+
+    char cmd = data[0];
+    //char id = data[1];
+
+    switch(cmd)
+    {
+    case 'G':
+        qDebug()<< "GET";
+
+        _socket->write(QByteArray("g000"));
+        break;
+    case 'S':
+        qDebug()<< "SET";
+        _socket->write(QByteArray("s000"));
+        break;
+    case 'E':
+        qDebug()<< "ERROR";
+        _socket->write(QByteArray("e000"));
+        break;
+    default:
+        qDebug()<< "Error:Unknown command byte!";
+    }
+}
+
+void MainWindow::onConnected()
+{
+    qDebug()<< "Connected!";
+}
+
+void MainWindow::onErrorSocket(QAbstractSocket::SocketError socketError)
+{
+    Q_UNUSED(socketError);
+
+    qDebug()<< "Error connecting: " << _socket->errorString();
+
+    QMessageBox::critical(this,
+                          "Connection error",
+                          "Connection error: " + _socket->errorString()
+                          + "\n\nPlease restart the application",
+                          QMessageBox::Close);
+
+    this->close();
+}
+
+void MainWindow::onDisconnected()
+{
+    qDebug() << "Disconnected!";
+
+    delete _socket;
+    _socket = nullptr;
+
+    connectSocket();
 }

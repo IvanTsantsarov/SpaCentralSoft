@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QMainWindow>
+#include <QThreadPool>
 #include <QtNetwork/QTcpServer>
 #include <QtNetwork/QHostAddress>
 #include <QtNetwork/QTcpSocket>
@@ -13,9 +14,10 @@ class TcpServer : public QTcpServer
 {
     Q_OBJECT
 private:
+    QMainWindow* _mainWindow;
+
     QHostAddress _hostAddress;
     quint16 _port;
-    QMainWindow* _mainWindow;
 
     SensorData _sensorData;
 

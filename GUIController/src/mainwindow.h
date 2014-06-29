@@ -22,7 +22,7 @@ class MainWindow : public QMainWindow
 private:
     Ui::MainWindow* ui;
 
-    QTcpSocket _socket;
+    QTcpSocket* _socket = nullptr;
 
     ProgramSettings _programSettings;
     QList<IndicatorProperties> _listIndicatorProperties;
@@ -35,6 +35,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+// GUI
 private:
     void showDialogChangeTemperature();
 
@@ -47,8 +48,16 @@ private slots:
     void onListWidgetItemDoubleClicked(QListWidgetItem* item);
     void onTemperatureIndicatorDoubleClicked(QGraphicsSceneMouseEvent* event);
 
+// Socket connection
+private:
+    void connectSocket();
+    void sendTemperatureDesired();
+
+private slots:
     void onDataRecieved();
     void onDisconnected();
+    void onConnected();
+    void onErrorSocket(QAbstractSocket::SocketError socketError);
 };
 
 #endif // MAINWINDOW_H
