@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DialogChangeTemperature</class>
- <widget class="QDialog" name="DialogChangeTemperature">
+ <class>DialogTemperatureTarget</class>
+ <widget class="QDialog" name="DialogTemperatureTarget">
   <property name="windowModality">
    <enum>Qt::ApplicationModal</enum>
   </property>
@@ -75,7 +75,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QDoubleSpinBox" name="spinBox_TemperatureDesired">
+        <widget class="QDoubleSpinBox" name="spinBox_TemperatureTarget">
          <property name="font">
           <font>
            <pointsize>20</pointsize>
@@ -144,7 +144,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>DialogChangeTemperature</receiver>
+   <receiver>DialogTemperatureTarget</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -160,7 +160,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>DialogChangeTemperature</receiver>
+   <receiver>DialogTemperatureTarget</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

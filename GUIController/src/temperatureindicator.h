@@ -24,7 +24,7 @@ private:
 
     QString _text;
     QListWidget* _listWidget;
-    qreal _temperatureDesired = 17.5;
+    qreal _temperatureTarget = 17.5;
     qreal _temperatureCurrent = 0.0;
     bool _sensorConnected = false;
     bool _indicatorSelected = false;
@@ -39,6 +39,7 @@ private:
     CGraphicsRectItem* _graphicsRectItem;
     QGraphicsTextItem* _graphicsTextItem;
 
+    void updateState();
 public:
     explicit TemperatureIndicator(IndicatorProperties indicatorProperties,
                                   ProgramSettings programSettings,
@@ -51,14 +52,14 @@ public:
     quint8 getSensorId();
     bool isSensorFunctional();
     qreal getTemperatureCurrent();
-    qreal getTemperatureDesired();
+    qreal getTemperatureTarget();
 
     void setConnected(bool connected);
     void setPosition(QPointF& position);
     void setIndicatorSelected(bool indicatorSelected);
     void setSensorState(SensorState sensorState);
-    bool setTemperatureDesired(qreal temp);
-    bool setTemperatureCurrent(qreal temp);
+    void setTemperatureTarget(qreal temperature);
+    void setTemperatureCurrent(qreal temperature);
 
     void update();
 

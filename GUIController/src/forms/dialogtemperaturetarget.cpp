@@ -1,14 +1,14 @@
-#include "dialogchangetemperature.h"
-#include "ui_dialogchangetemperature.h"
+#include "dialogtemperaturetarget.h"
+#include "ui_dialogtemperaturetarget.h"
 
-DialogChangeTemperature::DialogChangeTemperature(QWidget* parent,
+DialogTemperatureTarget::DialogTemperatureTarget(QWidget* parent,
                                                  QString dialogTitle,
                                                  quint8 sensorId,
                                                  bool temperatureIndicatorFunctional,
-                                                 qreal temperatureDesired,
+                                                 qreal temperatureTarget,
                                                  qreal temperatureCurrent) :
     QDialog(parent),
-    ui(new Ui::DialogChangeTemperature)
+    ui(new Ui::DialogTemperatureTarget)
 {
     ui->setupUi(this);
     this->setWindowTitle(dialogTitle);
@@ -17,24 +17,24 @@ DialogChangeTemperature::DialogChangeTemperature(QWidget* parent,
 
     QString temperature("");
     if (temperatureIndicatorFunctional) {
-        temperature += QString("%1° /").arg(temperatureCurrent, 1);
+        temperature += QString("%1° /").arg(temperatureCurrent, 1, 'f', 1);
     }
     else {
         temperature += QString("?° /");
     }
 
     ui->label_TemperatureCurrent->setText(temperature);
-    ui->spinBox_TemperatureDesired->setValue(temperatureDesired);
+    ui->spinBox_TemperatureTarget->setValue(temperatureTarget);
 }
 
-DialogChangeTemperature::~DialogChangeTemperature()
+DialogTemperatureTarget::~DialogTemperatureTarget()
 {
     delete ui;
 }
 
-qreal DialogChangeTemperature::getValue()
+qreal DialogTemperatureTarget::getValue()
 {
-    return ui->spinBox_TemperatureDesired->value();
+    return ui->spinBox_TemperatureTarget->value();
 }
 
 

@@ -75,6 +75,10 @@ ConfigLoader::ConfigLoader(QString fileName, QMainWindow* mainWindow)
     qDebug() << "Success!";
 }
 
+/*
+ * Helper methods
+ */
+
 ///
 /// \brief ConfigLoader::firstChildElement
 /// \param tagName
@@ -142,6 +146,10 @@ QString ConfigLoader::getAttributeValue(const QString& attributeName, QDomElemen
 
     return attribute.value();
 }
+
+/*
+ * Parsing methods
+ */
 
 void ConfigLoader::parseProgramSettings(QDomElement& element)
 {
@@ -243,6 +251,8 @@ void ConfigLoader::parseIndicatorProperties(QDomElement& element)
         qreal x = getAttributeValue("x", currentChildElement).toFloat();
         qreal y = getAttributeValue("y", currentChildElement).toFloat();
         indicatorProperties.position = QPointF(x, y);
+        indicatorProperties.temperatureTarget =
+                getAttributeValue("temperaturetarget", currentChildElement).toDouble();
 
         _listIndicatorProperties.push_back(indicatorProperties);
     }

@@ -1,13 +1,13 @@
-#ifndef DIALOGCHANGETEMPERATURE_H
-#define DIALOGCHANGETEMPERATURE_H
+#ifndef DIALOGTEMPERATURETARGET_H
+#define DIALOGTEMPERATURETARGET_H
 
 #include <QDialog>
 
 namespace Ui {
-class DialogChangeTemperature;
+class DialogTemperatureTarget;
 }
 
-class DialogChangeTemperature : public QDialog
+class DialogTemperatureTarget : public QDialog
 {
     Q_OBJECT
 
@@ -15,20 +15,20 @@ private:
     quint8 _sensorId;
 
 public:
-    explicit DialogChangeTemperature(QWidget* parent,
+    explicit DialogTemperatureTarget(QWidget* parent,
                                      QString dialogTitle,
                                      quint8 sensorId,
                                      bool temperatureIndicatorFunctional,
-                                     qreal temperatureDesired,
+                                     qreal temperatureTarget,
                                      qreal temperatureCurrent);
-    ~DialogChangeTemperature();
+    ~DialogTemperatureTarget();
 
 private:
-    Ui::DialogChangeTemperature *ui;
+    Ui::DialogTemperatureTarget *ui;
 
 public:
     qreal getValue();
 
 };
 
-#endif // DIALOGCHANGETEMPERATURE_H
+#endif // DIALOGTEMPERATURETARGET_H

@@ -40,6 +40,7 @@ struct IndicatorProperties
     QString text;
     QString highlightImageFileName;
     QPointF position;
+    qreal temperatureTarget;
 };
 
 #endif // STRUCTURES_H

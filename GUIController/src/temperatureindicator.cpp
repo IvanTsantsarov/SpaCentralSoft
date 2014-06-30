@@ -121,9 +121,9 @@ qreal TemperatureIndicator::getTemperatureCurrent()
     return _temperatureCurrent;
 }
 
-qreal TemperatureIndicator::getTemperatureDesired()
+qreal TemperatureIndicator::getTemperatureTarget()
 {
-    return _temperatureDesired;
+    return _temperatureTarget;
 }
 
 void TemperatureIndicator::setConnected(bool connected)
@@ -160,13 +160,13 @@ void TemperatureIndicator::update()
     QString indication("");
 
     if ((SensorState::Disconnected != _sensorState) && (SensorState::Undefined != _sensorState)) {
-        indication += QString::number(_temperatureCurrent);
+        indication += QString::number(_temperatureCurrent, 'f', 1);
     }
     else {
         indication +=QString("?");
     }
     indication += QString("° / ");
-    indication += QString::number(_temperatureDesired);
+    indication += QString::number(_temperatureTarget, 'f', 1);
     indication += QString("°");
 #ifdef DEBUG
     qDebug() << "INDICATION: " << indication;
@@ -192,7 +192,13 @@ void TemperatureIndicator::update()
 
     QBrush brush(Qt::black, Qt::BrushStyle::SolidPattern);
 
-    int alpha = _indicatorSelected ? _programSettings.indicator.alphaSelected : _programSettings.indicator.alphaDisselected;
+    int alpha;
+    if (_indicatorSelected) {
+        alpha = _programSettings.indicator.alphaSelected;
+    }
+    else {
+        alpha = _programSettings.indicator.alphaDisselected;
+    }
 
     switch (_sensorState) {
     case SensorState::Undefined:
@@ -220,7 +226,7 @@ void TemperatureIndicator::update()
             colorBorder.setNamedColor(_programSettings.indicator.bordercolor);
         }
         else {
-            qDebug() << "Invalid <bodercolor> value: " + _programSettings.indicator.bordercolor;
+            qDebug() << "Invalid \"bodercolor\" value: " + _programSettings.indicator.bordercolor;
 
             colorBorder = Qt::white;
         }
@@ -258,19 +264,31 @@ void TemperatureIndicator::onSelected()
     this->update();
 }
 
-bool TemperatureIndicator::setTemperatureDesired(qreal temp)
+void TemperatureIndicator::updateState()
 {
-    _temperatureDesired = temp;
-    this->update();
-
-    return true;
+    // Set sensor color
+    qreal difference = qAbs(getTemperatureTarget() - getTemperatureCurrent());
+    if (TEMPERATURE_THRESHOLD > difference)
+    {
+        setSensorState(SensorState::TemperatureNormal);
+    } else if (getTemperatureTarget() < getTemperatureCurrent()) {
+        setSensorState(SensorState::TemperatureHigher);
+    }
+    else {
+        setSensorState(SensorState::TemperatureLower);
+    }
 }
 
-bool TemperatureIndicator::setTemperatureCurrent(qreal temp)
+void TemperatureIndicator::setTemperatureTarget(qreal temperature)
 {
-    Q_UNUSED(temp);
-
+    _temperatureTarget = temperature;
+    this->updateState();
     this->update();
+}
 
-    return true;
+void TemperatureIndicator::setTemperatureCurrent(qreal temperature)
+{
+    _temperatureCurrent = temperature;
+    this->updateState();
+    this->update();
 }

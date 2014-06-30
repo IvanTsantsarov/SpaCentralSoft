@@ -3,13 +3,14 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QtNetwork/QHostAddress>
 #include <QMessageBox>
+#include <QtMath>
 
 #include <QDebug>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "forms/dialogabout.h"
-#include "forms/dialogchangetemperature.h"
+#include "forms/dialogtemperaturetarget.h"
 
 #include "custom/constants.h"
 #include "custom/types.h"
@@ -24,6 +25,13 @@ MainWindow::MainWindow(QWidget *parent) :
     // Load program settings from "assets/config.xml"
     ConfigLoader configLoader(CONFIG_FILE, this);
     _programSettings = configLoader.getProgramSettings();
+
+    // Load program setting from persistant storage
+    QCoreApplication::setOrganizationName(ORGANIZATION_NAME);
+    QCoreApplication::setOrganizationDomain(ORGANIZATION_DOMAIN);
+    QCoreApplication::setApplicationName(APPLICATION_NAME);
+
+    _programSettingsPersistant = new QSettings(this);
 
     // Setup the GUI
     ui->setupUi(this);  
@@ -57,6 +65,16 @@ MainWindow::MainWindow(QWidget *parent) :
         temperatureIndicator->setPosition(currentIndicatorProperties.position);
         temperatureIndicator->setSensorState(SensorState::Disconnected);
         temperatureIndicator->update();
+
+        QString key = QString::number(temperatureIndicator->getSensorId());
+        if (_programSettingsPersistant->contains(key))  {
+            qreal temperature = _programSettingsPersistant->value(key).toDouble();
+            temperatureIndicator->setTemperatureTarget(temperature);
+        }
+        else {
+            temperatureIndicator->setTemperatureTarget(currentIndicatorProperties.temperatureTarget);
+            _programSettingsPersistant->setValue(key, temperatureIndicator->getTemperatureTarget());
+        }
 
         _temperatureIndicators.push_back(temperatureIndicator);
     }
@@ -109,14 +127,14 @@ void MainWindow::showDialogChangeTemperature()
     QString dialogTitle = _currentTemperatureIndicator->text();
     quint8 sensorId = _currentTemperatureIndicator->getSensorId();
     bool temperatureIndicatorFunctional = _currentTemperatureIndicator->isSensorFunctional();
-    qreal temperatureDesired = _currentTemperatureIndicator->getTemperatureDesired();
+    qreal temperatureTarget = _currentTemperatureIndicator->getTemperatureTarget();
     qreal temperatureCurrent = _currentTemperatureIndicator->getTemperatureCurrent();
 
-    DialogChangeTemperature dialogChangeTemperature(this,
+    DialogTemperatureTarget dialogChangeTemperature(this,
                                                     dialogTitle,
                                                     sensorId,
                                                     temperatureIndicatorFunctional,
-                                                    temperatureDesired,
+                                                    temperatureTarget,
                                                     temperatureCurrent);
 
     // Remove ? from TitleBar
@@ -125,7 +143,11 @@ void MainWindow::showDialogChangeTemperature()
     dialogChangeTemperature.setWindowFlags(windowFlags);
 
     if(dialogChangeTemperature.exec()) {
-        _currentTemperatureIndicator->setTemperatureDesired(dialogChangeTemperature.getValue());
+        qreal temperature = dialogChangeTemperature.getValue();
+        _currentTemperatureIndicator->setTemperatureTarget(temperature);
+        QString key = QString::number(_currentTemperatureIndicator->getSensorId());
+        _programSettingsPersistant->setValue(key, temperature);
+        sendTemperatureTarget(_currentTemperatureIndicator);
     }
 }
 
@@ -191,7 +213,7 @@ void MainWindow::onListWidgetItemDoubleClicked(QListWidgetItem* item)
 {
     Q_UNUSED(item);
 
-    if(nullptr ==_currentTemperatureIndicator) {
+    if(nullptr == _currentTemperatureIndicator) {
         return;
     }
 
@@ -212,44 +234,83 @@ void MainWindow::onTemperatureIndicatorDoubleClicked(QGraphicsSceneMouseEvent *e
 // Connection
 void MainWindow::connectSocket()
 {
-    Q_ASSERT(_socket == nullptr);
+    Q_ASSERT(nullptr == _socket);
 
     _socket = new QTcpSocket();
     _socket->connectToHost(_programSettings.server.ipV4Address,
                            _programSettings.server.port);
 }
 
-void MainWindow::sendTemperatureDesired()
+void MainWindow::sendTemperatureTarget(TemperatureIndicator* temperatureIndicator)
 {
-    //ui->
+    if (!_socket) {
+        return;
+    }
+
+    if (_socket->isValid()) {
+        qreal temperatureTarget = temperatureIndicator->getTemperatureTarget();
+        qint8 integralPart = qFloor(temperatureTarget);
+        quint8 fractionalPart = (temperatureTarget - integralPart) * FRACTIONAL_BASE;
+
+        QByteArray commandOutgoing;
+        commandOutgoing.append(QChar(COMMAND_SET).toUpper().toLatin1());
+        commandOutgoing.append(static_cast<char>(temperatureIndicator->getSensorId()));
+        commandOutgoing.append(static_cast<char>(integralPart));
+        commandOutgoing.append(static_cast<char>(fractionalPart));
+
+        _socket->write(commandOutgoing);
+    }
+}
+
+void MainWindow::setTemperatureIndicator(quint8 sensorId, qreal temperature)
+{
+    for (TemperatureIndicator* currentTemperatureIndicator: _temperatureIndicators) {
+        if (currentTemperatureIndicator->getSensorId() == sensorId) {   
+
+            currentTemperatureIndicator->setTemperatureCurrent(temperature);
+        }
+    }
 }
 
 // Private slots
 void MainWindow::onDataRecieved()
 {
-    QByteArray data = _socket->readAll();
-    qDebug()<< QString::fromLatin1(data.toHex(), data.size());
+    QByteArray dataIncomming = _socket->read(4);
 
-    char cmd = data[0];
-    //char id = data[1];
-
-    switch(cmd)
+    while( dataIncomming.size() > 0 )
     {
-    case 'G':
-        qDebug()<< "GET";
+        qDebug()<< QString::fromLatin1(dataIncomming.toHex(), dataIncomming.size());
 
-        _socket->write(QByteArray("g000"));
-        break;
-    case 'S':
-        qDebug()<< "SET";
-        _socket->write(QByteArray("s000"));
-        break;
-    case 'E':
-        qDebug()<< "ERROR";
-        _socket->write(QByteArray("e000"));
-        break;
-    default:
-        qDebug()<< "Error:Unknown command byte!";
+        char byte00_Command = QChar(dataIncomming[0]).toUpper().toLatin1();
+        quint8 byte01_SensorId = static_cast<quint8>(dataIncomming[1]);
+        qint8 byte02 = static_cast<qint8>(dataIncomming[2]);
+        quint8 byte03 = static_cast<quint8>(dataIncomming[3]);
+
+        switch(byte00_Command)
+        {
+        case COMMAND_SET:
+        {
+            qDebug()<< "SET";
+            qreal integralPart = static_cast<qreal>(byte02);
+            qreal fractionalPart = static_cast<qreal>(byte03) / FRACTIONAL_BASE;
+            qreal temperature;
+            if (0 > integralPart) {
+                temperature = integralPart - fractionalPart;
+            }
+            else {
+                temperature = integralPart + fractionalPart;
+            }
+            setTemperatureIndicator(byte01_SensorId, temperature);
+        }
+            break;
+        case COMMAND_ERROR:
+            qDebug()<< "ERROR";
+            break;
+        default:
+            qDebug()<< "Error:Unknown command byte!";
+        }
+
+        dataIncomming = _socket->read(4);
     }
 }
 
@@ -260,6 +321,11 @@ void MainWindow::onConnected()
                                            .arg(_socket->localPort());
     qDebug() << "Peer address:" << QString("%1:%2").arg(_socket->peerAddress().toString())
                                            .arg(_socket->localPort());
+
+    // Send all target temperatures on connect
+    for (TemperatureIndicator* currentTemperatureIndicator: _temperatureIndicators) {
+        sendTemperatureTarget(currentTemperatureIndicator);
+    }
 }
 
 void MainWindow::onErrorSocket(QAbstractSocket::SocketError socketError)

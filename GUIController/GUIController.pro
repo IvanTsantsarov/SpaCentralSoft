@@ -28,23 +28,23 @@ SOURCES += src/main.cpp\
     src/cgraphicsrectitem.cpp \
     src/cgraphicsscene.cpp \
     src/forms/dialogabout.cpp \
-    src/forms/dialogchangetemperature.cpp \
-    src/configloader.cpp
+    src/configloader.cpp \
+    src/forms/dialogtemperaturetarget.cpp
 
 HEADERS  += src/mainwindow.h \
     src/temperatureindicator.h \
     src/cgraphicsrectitem.h \
     src/cgraphicsscene.h \
     src/forms/dialogabout.h \
-    src/forms/dialogchangetemperature.h \
     src/configloader.h \
     src/custom/constants.h \
     src/custom/types.h \
-    src/custom/structures.h
+    src/custom/structures.h \
+    src/forms/dialogtemperaturetarget.h
 
 FORMS    += src/forms/mainwindow.ui \
     src/forms/dialogabout.ui \
-    src/forms/dialogchangetemperature.ui
+    src/forms/dialogtemperaturetarget.ui
 
 OTHER_FILES += \
     assets/map.png \

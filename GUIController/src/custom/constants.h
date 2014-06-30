@@ -1,8 +1,19 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#define ORGANIZATION_NAME "MSD Systems"
+#define ORGANIZATION_DOMAIN "msd-systems.com"
+#define APPLICATION_NAME "SpaCentralSoft"
+
 #define CONFIG_FILE "assets/config.xml"
 #define ASSETS_PATH "assets/"
+
+#define FRACTIONAL_BASE 255.5
+
+#define COMMAND_SET 'S'
+#define COMMAND_ERROR 'E'
+
+#define TEMPERATURE_THRESHOLD 0.05
 
 #ifdef USE_OBSOLETE
 #define ASSETS_BMP_MAP "assets/map.png"

@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QSettings>
 #include <QtNetwork/QTcpSocket>
 
 #include "configloader.h"
@@ -22,14 +23,15 @@ class MainWindow : public QMainWindow
 private:
     Ui::MainWindow* ui;
 
-    QTcpSocket* _socket = nullptr;
-
     ProgramSettings _programSettings;
+    QSettings* _programSettingsPersistant;
     QList<IndicatorProperties> _listIndicatorProperties;
 
     CGraphicsScene* _scene;
     QList<TemperatureIndicator*> _temperatureIndicators;
     TemperatureIndicator* _currentTemperatureIndicator;
+
+    QTcpSocket* _socket = nullptr;
 
 public:
     explicit MainWindow(QWidget *parent = 0);
@@ -51,7 +53,8 @@ private slots:
 // Socket connection
 private:
     void connectSocket();
-    void sendTemperatureDesired();
+    void sendTemperatureTarget(TemperatureIndicator* temperatureIndicator);
+    void setTemperatureIndicator(quint8 sensorId, qreal temperature);
 
 private slots:
     void onDataRecieved();
