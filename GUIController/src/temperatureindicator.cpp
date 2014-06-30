@@ -106,6 +106,11 @@ QString TemperatureIndicator::text() const
     return _text;
 }
 
+quint8 TemperatureIndicator::getSensorId()
+{
+    return _indicatorProperties.sensorId;
+}
+
 bool TemperatureIndicator::isSensorFunctional()
 {
     return (SensorState::Disconnected != _sensorState) && (SensorState::Undefined != _sensorState);

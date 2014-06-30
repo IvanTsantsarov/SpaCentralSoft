@@ -36,6 +36,7 @@ struct ProgramSettings
 
 struct IndicatorProperties
 {
+    quint8 sensorId;
     QString text;
     QString highlightImageFileName;
     QPointF position;

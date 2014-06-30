@@ -21,13 +21,16 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {  
+    // Load program settings from "assets/config.xml"
     ConfigLoader configLoader(CONFIG_FILE, this);
     _programSettings = configLoader.getProgramSettings();
 
-    _scene = new CGraphicsScene(this);
-    ui->setupUi(this);
+    // Setup the GUI
+    ui->setupUi(this);  
     connect(ui->action_About, SIGNAL(triggered()), this, SLOT(onActionAboutTriggered()));
 
+    // Setup the indicators display area
+    _scene = new CGraphicsScene(this);
     ui->graphicsView->setScene(_scene);
 
     QString imageFilePath = ASSETS_PATH + _programSettings.backgroundImageFileName;
@@ -42,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QGraphicsRectItem* sceneRectItemBackground = _scene->addRect(sceneRect);
     sceneRectItemBackground->setBrush(QBrush(imageBackgroundImage));
 
+    // Load the indicators
     _listIndicatorProperties = configLoader.getIndicatorProperties();
 
     for (IndicatorProperties currentIndicatorProperties: _listIndicatorProperties) {
@@ -70,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent) :
     _currentTemperatureIndicator = _temperatureIndicators[0];
     _currentTemperatureIndicator->setIndicatorSelected(true);
 
-    // Connect QListWidget to TemperatureIndicators
+    // Connect QListWidget signal to TemperatureIndicators
     isOk = connect(ui->listWidget,
                    SIGNAL(itemClicked(QListWidgetItem*)),
                    this,
@@ -85,7 +89,7 @@ MainWindow::MainWindow(QWidget *parent) :
     Q_ASSERT(isOk);
     Q_UNUSED(isOk);
 
-
+    // Setup socket
     connectSocket();
 
     connect(_socket, SIGNAL(readyRead()), this, SLOT(onDataRecieved()) );
@@ -93,13 +97,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(_socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()) );
     connect(_socket, SIGNAL(error(QAbstractSocket::SocketError)),
             this, SLOT(onErrorSocket(QAbstractSocket::SocketError)));
-
-
-
-    qDebug() << "Local address" << QString("%1:%2").arg(_socket->localAddress().toString())
-                                           .arg(_socket->localPort());
-    qDebug() << "Peer address:" << QString("%1:%2").arg(_socket->peerAddress().toString())
-                                           .arg(_socket->localPort());
 }
 
 MainWindow::~MainWindow()
@@ -109,13 +106,15 @@ MainWindow::~MainWindow()
 
 void MainWindow::showDialogChangeTemperature()
 {
+    QString dialogTitle = _currentTemperatureIndicator->text();
+    quint8 sensorId = _currentTemperatureIndicator->getSensorId();
+    bool temperatureIndicatorFunctional = _currentTemperatureIndicator->isSensorFunctional();
     qreal temperatureDesired = _currentTemperatureIndicator->getTemperatureDesired();
     qreal temperatureCurrent = _currentTemperatureIndicator->getTemperatureCurrent();
-    bool temperatureIndicatorFunctional = _currentTemperatureIndicator->isSensorFunctional();
-    QString dialogTitle = _currentTemperatureIndicator->text();
 
     DialogChangeTemperature dialogChangeTemperature(this,
                                                     dialogTitle,
+                                                    sensorId,
                                                     temperatureIndicatorFunctional,
                                                     temperatureDesired,
                                                     temperatureCurrent);
@@ -210,7 +209,6 @@ void MainWindow::onTemperatureIndicatorDoubleClicked(QGraphicsSceneMouseEvent *e
     showDialogChangeTemperature();
 }
 
-
 // Connection
 void MainWindow::connectSocket()
 {
@@ -258,6 +256,10 @@ void MainWindow::onDataRecieved()
 void MainWindow::onConnected()
 {
     qDebug()<< "Connected!";
+    qDebug() << "Local address" << QString("%1:%2").arg(_socket->localAddress().toString())
+                                           .arg(_socket->localPort());
+    qDebug() << "Peer address:" << QString("%1:%2").arg(_socket->peerAddress().toString())
+                                           .arg(_socket->localPort());
 }
 
 void MainWindow::onErrorSocket(QAbstractSocket::SocketError socketError)

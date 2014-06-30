@@ -11,17 +11,24 @@ class DialogChangeTemperature : public QDialog
 {
     Q_OBJECT
 
+private:
+    quint8 _sensorId;
+
 public:
-    explicit DialogChangeTemperature(QWidget *parent,
+    explicit DialogChangeTemperature(QWidget* parent,
                                      QString dialogTitle,
+                                     quint8 sensorId,
                                      bool temperatureIndicatorFunctional,
                                      qreal temperatureDesired,
                                      qreal temperatureCurrent);
-    qreal getValue();
     ~DialogChangeTemperature();
 
 private:
     Ui::DialogChangeTemperature *ui;
+
+public:
+    qreal getValue();
+
 };
 
 #endif // DIALOGCHANGETEMPERATURE_H

@@ -1,8 +1,9 @@
 #include "dialogchangetemperature.h"
 #include "ui_dialogchangetemperature.h"
 
-DialogChangeTemperature::DialogChangeTemperature(QWidget *parent,
+DialogChangeTemperature::DialogChangeTemperature(QWidget* parent,
                                                  QString dialogTitle,
+                                                 quint8 sensorId,
                                                  bool temperatureIndicatorFunctional,
                                                  qreal temperatureDesired,
                                                  qreal temperatureCurrent) :
@@ -11,6 +12,8 @@ DialogChangeTemperature::DialogChangeTemperature(QWidget *parent,
 {
     ui->setupUi(this);
     this->setWindowTitle(dialogTitle);
+
+    _sensorId = sensorId;
 
     QString temperature("");
     if (temperatureIndicatorFunctional) {
@@ -24,12 +27,14 @@ DialogChangeTemperature::DialogChangeTemperature(QWidget *parent,
     ui->spinBox_TemperatureDesired->setValue(temperatureDesired);
 }
 
+DialogChangeTemperature::~DialogChangeTemperature()
+{
+    delete ui;
+}
+
 qreal DialogChangeTemperature::getValue()
 {
     return ui->spinBox_TemperatureDesired->value();
 }
 
-DialogChangeTemperature::~DialogChangeTemperature()
-{
-    delete ui;
-}
+

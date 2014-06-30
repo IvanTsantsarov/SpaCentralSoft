@@ -77,10 +77,11 @@ ConfigLoader::ConfigLoader(QString fileName, QMainWindow* mainWindow)
 
 ///
 /// \brief ConfigLoader::firstChildElement
-/// Helpe function to parse the first Child element
 /// \param tagName
 /// \param document
 /// \return
+///
+///  Helper function to parse the first Child element
 ///
 QDomElement ConfigLoader::firstChildElement(const QString& tagName, QDomDocument& document) const
 {
@@ -95,9 +96,11 @@ QDomElement ConfigLoader::firstChildElement(const QString& tagName, QDomDocument
 
 ///
 /// \brief ConfigLoader::firstChildElement
-/// Helper function to parse the first Child element
 /// \param tagName
+/// \param element
 /// \return
+///
+///  Helper function to parse the first Child element
 ///
 QDomElement ConfigLoader::firstChildElement(const QString& tagName, QDomElement& element) const
 {
@@ -112,10 +115,11 @@ QDomElement ConfigLoader::firstChildElement(const QString& tagName, QDomElement&
 
 ///
 /// \brief ConfigLoader::nextSiblingElement
-/// Helper function to parse the next Sibling element
 /// \param tagName
 /// \param element
 /// \return
+///
+/// Helper function to parse the next Sibling element
 ///
 QDomElement ConfigLoader::nextSiblingElement(const QString& tagName, QDomElement& element) const
 {
@@ -157,8 +161,6 @@ void ConfigLoader::parseProgramSettings(QDomElement& element)
 
     currentElement = this->nextSiblingElement("background", currentElement);
     _programSettings.backgroundImageFileName = getAttributeValue("imageSource", currentElement);
-
-    //_programSettings.imageBackgroundImage = QImage()
 
     currentElement = this->nextSiblingElement("highlight", currentElement);
     _programSettings.highlightOpacity = getAttributeValue("opacity", currentElement).toFloat();
@@ -235,6 +237,7 @@ void ConfigLoader::parseIndicatorProperties(QDomElement& element)
 
         IndicatorProperties indicatorProperties;
 
+        indicatorProperties.sensorId = getAttributeValue("sensorid", currentChildElement).toInt();
         indicatorProperties.text = getAttributeValue("text", currentChildElement);
         indicatorProperties.highlightImageFileName = getAttributeValue("image", currentChildElement);
         qreal x = getAttributeValue("x", currentChildElement).toFloat();
@@ -265,8 +268,9 @@ QList<IndicatorProperties> ConfigLoader::getIndicatorProperties() const
 
 ///
 /// \brief ConfigLoader::logToConsole
-/// Logs a message to the console
 /// \param element
+///
+/// Logs a message to the console
 ///
 void ConfigLoader::logToConsole(const QDomElement& element) const
 {
@@ -275,8 +279,9 @@ void ConfigLoader::logToConsole(const QDomElement& element) const
 
 ///
 /// \brief ConfigLoader::logToConsole
-/// Logs a message to the console
 /// \param element
+///
+/// Logs a message to the console
 ///
 void ConfigLoader::logToConsole(const QDomAttr& attribute) const
 {
@@ -285,8 +290,9 @@ void ConfigLoader::logToConsole(const QDomAttr& attribute) const
 
 ///
 /// \brief ConfigLoader::showFatalError
-/// Displays an error message and quits the application
 /// \param errorMessage
+///
+/// Displays an error message and quits the application
 ///
 void ConfigLoader::showFatalError(const QString errorMessage) const
 {

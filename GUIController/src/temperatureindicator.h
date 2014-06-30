@@ -48,6 +48,7 @@ public:
     CGraphicsRectItem* getGraphicsRectItem() const;
     QString text() const; 
 
+    quint8 getSensorId();
     bool isSensorFunctional();
     qreal getTemperatureCurrent();
     qreal getTemperatureDesired();
