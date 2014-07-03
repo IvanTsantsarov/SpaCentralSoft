@@ -19,7 +19,7 @@
         <item sensorid="101" text="Сауна 2"            image="zone2.png" x="830"  y="200" temperaturetarget="25.5"/>
         <item sensorid="102" text="Басейн"             image="zone3.png" x="1165" y="269" temperaturetarget="25.5"/>
         <item sensorid="103" text="Масаж 1"            image="zone4.png" x="1152" y="490" temperaturetarget="25.5"/>
-        <item sensorid="104" text="Масаж 2"            image="zone5.png" x="688"  y="663" temperaturetarget="25.5"/>
+        <item sensorid="104" text="Масаж 2"            image="zone5.png" x="686"  y="686" temperaturetarget="25.5"/>
         <item sensorid="105" text="Хидро Масаж 1"      image="zone6.png" x="903"  y="645" temperaturetarget="25.5"/>
         <item sensorid="106" text="Хидро Масаж 2"      image="zone7.png" x="1094" y="824" temperaturetarget="25.5"/>
     </indicators>
@@ -28,7 +28,7 @@
         <item sensorid="101" text="Sauna 2"            image="zone2.png" x="830"  y="200" temperaturetarget="25.5"/>
         <item sensorid="102" text="Pool"               image="zone3.png" x="1165" y="269" temperaturetarget="25.5"/>
         <item sensorid="103" text="Massage 1"          image="zone4.png" x="1152" y="490" temperaturetarget="25.5"/>
-        <item sensorid="104" text="Massage 2"          image="zone5.png" x="688"  y="663" temperaturetarget="25.5"/>
+        <item sensorid="104" text="Massage 2"          image="zone5.png" x="686"  y="686" temperaturetarget="25.5"/>
         <item sensorid="105" text="Hydro-Massage 1"    image="zone6.png" x="903"  y="645" temperaturetarget="25.5"/>
         <item sensorid="106" text="Hydro-Massage 2"    image="zone7.png" x="1094" y="824" temperaturetarget="25.5"/>
     </indicators>

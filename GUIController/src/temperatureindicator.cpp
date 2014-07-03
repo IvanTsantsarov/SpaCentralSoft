@@ -23,7 +23,7 @@ TemperatureIndicator::TemperatureIndicator(IndicatorProperties indicatorProperti
                           + _programSettings.assetsPath
                           + _indicatorProperties.highlightImageFileName);
 
-#ifdef USE_GRAPHICSRECTITEM_ZONE
+#if defined USE_GRAPHICSRECTITEM_ZONE && defined USE_HIGHLIGHTING
     QImage image(imageFileName);
 
     if (image.isNull()) {
@@ -39,7 +39,7 @@ TemperatureIndicator::TemperatureIndicator(IndicatorProperties indicatorProperti
     _graphicsRectItem_Zone->setOpacity(programSettings.highlightOpacity);
     _graphicsRectItem_Zone->setVisible(false);
     _graphicsRectItem_Zone->setZValue(0);
-#else
+#elif USE_HIGHLIGHTING
     QPixmap pixmap(imageFileName);
     if (pixmap.isNull()) {
         qDebug() << "Pixmap failed to load:" << imageFileName;
@@ -75,9 +75,9 @@ TemperatureIndicator::TemperatureIndicator(IndicatorProperties indicatorProperti
     _graphicsTextItem->setDefaultTextColor(color);
     _graphicsTextItem->setZValue(2);
 
-#ifdef USE_GRAPHICSRECTITEM_ZONE
+#if defined USE_GRAPHICSRECTITEM_ZONE && defined USE_HIGHLIGHTING
     _graphicsScene->addItem(_graphicsRectItem_Zone);
-#else
+#elif USE_HIGHLIGHTING
     _graphicsScene->addItem(_graphicsPixmapItem);
 #endif
     _graphicsScene->addItem(_graphicsRectItem);
@@ -133,9 +133,9 @@ void TemperatureIndicator::setConnected(bool connected)
 
 void TemperatureIndicator::setPosition(QPointF& position)
 {
-#ifdef USE_GRAPHICSRECTITEM_ZONE
+#if defined USE_GRAPHICSRECTITEM_ZONE && defined USE_HIGHLIGHTING
     _graphicsRectItem_Zone->setPos(0, 0);
-#else
+#elif USE_HIGHLIGHTING
     _graphicsPixmapItem->setPos(0, 0);
 #endif // USE_GRAPHICSRECTITEM_ZONE
     _graphicsRectItem->setPos(position);
@@ -232,18 +232,18 @@ void TemperatureIndicator::update()
         }
         QPen pen(colorBorder, _programSettings.indicator.borderwidth);
 
-#ifdef USE_GRAPHICSRECTITEM_ZONE
+#if defined USE_GRAPHICSRECTITEM_ZONE && defined USE_HIGHLIGHTING
         _graphicsRectItem_Zone->setVisible(true);
-#else
+#elif USE_HIGHLIGHTING
         _graphicsPixmapItem->setVisible(true);
 #endif // USE_GRAPHICSRECTITEM_ZONE
         _graphicsRectItem->setPen(pen);
     }
     else {
         QPen pen(Qt::NoPen);
-#ifdef USE_GRAPHICSRECTITEM_ZONE
+#if defined USE_GRAPHICSRECTITEM_ZONE && defined USE_HIGHLIGHTING
         _graphicsRectItem_Zone->setVisible(false);
-#else
+#elif USE_HIGHLIGHTING
         _graphicsPixmapItem->setVisible(false);
 #endif // USE_GRAPHICSRECTITEM_ZONE
         _graphicsRectItem->setPen(pen);
