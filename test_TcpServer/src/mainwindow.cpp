@@ -16,21 +16,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    // Create a few default test values - "sensors"
-    _sensors.append(SensorData('s', CUSTOM_SENSOR01, 18, 2));
-    _sensors.append(SensorData('g', CUSTOM_SENSOR02, 20, 5));
-    _sensors.append(SensorData('s', CUSTOM_SENSOR03, 25, 7));
-
-    // Add "sensors" to the GUI
-    for (auto sensor: _sensors) {
-        ui->comboBox_Byte01->addItem(QString::number(sensor.byte01), sensor.byte01);
-    }
-    // Set the input fields of Command Settings/Bytes Box (GUI) to match the first
-    // item in the sensorsId ComboBox
-    setLabels(_sensors.at(0));
-
     // Set validators for the Command Settings/Bytes Box (GUI)
-    QRegExp regExp_Byte00("[gsGS]");
+    QRegExp regExp_Byte00("[gseGSE]");
     QRegExpValidator* validator_Byte00 = new QRegExpValidator(regExp_Byte00, this);
     ui->lineEdit_Byte00->setValidator(validator_Byte00);
 
@@ -96,6 +83,24 @@ MainWindow::MainWindow(QWidget *parent) :
     Q_ASSERT(isOk);
     Q_UNUSED(isOk);
 
+    _sensors = _tcpServer->getSensors();
+    Q_ASSERT(_sensors);
+
+    // Create a few default test values - "sensors"
+    _sensors->append(SensorData('s', CUSTOM_SENSOR01, 18, 3));
+    _sensors->append(SensorData('g', CUSTOM_SENSOR02, 20, 5));
+    _sensors->append(SensorData('e', CUSTOM_SENSOR03, 24, 7));
+
+    // Add "sensors" to the GUI
+    for (int currentSensorIndex = 0; _sensors->size() > currentSensorIndex; currentSensorIndex++ ) {
+        const SensorData* sensor = &_sensors->at(currentSensorIndex);
+        Q_ASSERT(sensor);
+        ui->comboBox_Byte01->addItem(QString::number(sensor->byte01), sensor->byte01);
+    }
+    // Set the input fields of Command Settings/Bytes Box (GUI) to match the first
+    // item in the sensorsId ComboBox
+    setLabels(_sensors->at(0));
+
     // Set the default values from the currently selected item in
     // Command Settings/Bytes Box (GUI)
     onClicked_pushButton_SetData();
@@ -128,20 +133,23 @@ void MainWindow::setSensor(const SensorData& sensorData)
 {
     // Look for the corresponding sensor in the list with sensors
     for (int currentSensorIndex = 0;
-         _sensors.count() > currentSensorIndex;
+         _sensors->count() > currentSensorIndex;
          currentSensorIndex++) {
+        SensorData currentSensor = _sensors->at(currentSensorIndex);
 
-        if (_sensors[currentSensorIndex].byte01 == sensorData.byte01) {
-            _sensors[currentSensorIndex].byte00 = sensorData.byte00;
-            _sensors[currentSensorIndex].byte02 = sensorData.byte02;
-            _sensors[currentSensorIndex].byte03 = sensorData.byte03;
+        if (currentSensor.byte01 == sensorData.byte01) {
+            currentSensor.byte00 = sensorData.byte00;
+            currentSensor.byte02 = sensorData.byte02;
+            currentSensor.byte03 = sensorData.byte03;
         }
+
+        _sensors->replace(currentSensorIndex, currentSensor);
 
         // If this is the current selected sensor in the Command
         // Settings/Bytes Box (GUI) set the corresponding input fields
         if (qvariant_cast<quint8>(ui->comboBox_Byte01->currentData())
-                == _sensors.at(currentSensorIndex).byte01 ) {
-            setLabels(_sensors.at(currentSensorIndex));
+                == _sensors->at(currentSensorIndex).byte01 ) {
+            setLabels(_sensors->at(currentSensorIndex));
         }
     }
 }
@@ -154,35 +162,6 @@ void MainWindow::setLabels(const SensorData& sensorData)
 }
 
 // SLOTS: Implementation
-
-///
-/// \brief MainWindow::onClicked_pushButton_SetData
-///
-/// Reads user input from Command Settings/Bytes Box (GUI) and emits
-/// sensorDataChanged(SensorData) signal.
-///
-void MainWindow::onClicked_pushButton_SetData()
-{
-    QString stringByte01 = ui->lineEdit_Byte00->text();
-    QString stringByte02 = ui->comboBox_Byte01->currentText();
-    QString stringByte03 = ui->lineEdit_Byte02->text();
-    QString stringByte04 = ui->lineEdit_Byte03->text();
-
-    SensorData sensorData(stringByte01.at(0).toLatin1(),
-                          static_cast<quint8>(stringByte02.toUShort()),
-                          static_cast<qint8>(stringByte03.toShort()),
-                          static_cast<quint8>(stringByte04.toShort()));
-
-    emit sensorDataChanged(sensorData);
-
-    QString consoleMessage = QString("New data set: %1 %2 %3 %4")
-            .arg(sensorData.byte00, 3)
-            .arg(sensorData.byte01, 3)
-            .arg(sensorData.byte02, 3)
-            .arg(sensorData.byte03, 3);
-
-    ui->textEdit_ConsoleOutput->append(consoleMessage);
-}
 
 void MainWindow::onServerStarted(QString ipV4Address, quint16 port)
 {
@@ -217,6 +196,44 @@ void MainWindow::onCommandSent(SensorData sensorData)
 }
 
 ///
+/// \brief MainWindow::onClicked_pushButton_SetData
+///
+/// Reads user input from Command Settings/Bytes Box (GUI) and emits
+/// sensorDataChanged(SensorData) signal.
+///
+void MainWindow::onClicked_pushButton_SetData()
+{
+    QString stringByte01 = ui->lineEdit_Byte00->text();
+    QString stringByte02 = ui->comboBox_Byte01->currentText();
+    QString stringByte03 = ui->lineEdit_Byte02->text();
+    QString stringByte04 = ui->lineEdit_Byte03->text();
+
+    SensorData sensorData(stringByte01.at(0).toLatin1(),
+                          static_cast<quint8>(stringByte02.toUShort()),
+                          static_cast<qint8>(stringByte03.toShort()),
+                          static_cast<quint8>(stringByte04.toShort()));
+
+    for (int currentSensorIndex = 0;
+         _sensors->size() > currentSensorIndex;
+         currentSensorIndex++ ) {
+        if (_sensors->at(currentSensorIndex).byte01 == sensorData.byte01)
+        {
+            _sensors->replace(currentSensorIndex, sensorData);
+        }
+    }
+
+    emit sensorDataChanged(sensorData);
+
+    QString consoleMessage = QString("New data set: %1 %2 %3 %4")
+            .arg(sensorData.byte00, 3)
+            .arg(sensorData.byte01, 3)
+            .arg(sensorData.byte02, 3)
+            .arg(sensorData.byte03, 3);
+
+    ui->textEdit_ConsoleOutput->append(consoleMessage);
+}
+
+///
 /// \brief MainWindow::on_comboBox_Byte01_currentIndexChanged
 /// \param index
 ///
@@ -225,11 +242,11 @@ void MainWindow::onCommandSent(SensorData sensorData)
 void MainWindow::on_comboBox_Byte01_currentIndexChanged(int index)
 {
     for (int currentSensorIndex = 0;
-         _sensors.count() > currentSensorIndex;
+         _sensors->count() > currentSensorIndex;
          currentSensorIndex++) {
         if (qvariant_cast<quint8>(ui->comboBox_Byte01->itemData(index))
-                == _sensors.at(currentSensorIndex).byte01) {
-            setLabels(_sensors.at(currentSensorIndex));
+                == _sensors->at(currentSensorIndex).byte01) {
+            setLabels(_sensors->at(currentSensorIndex));
         }
     }
 }

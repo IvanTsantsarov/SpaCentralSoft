@@ -7,21 +7,21 @@
 #include <QThreadPool>
 
 #include "tcpserverthread.h"
+#include "connectiontask.h"
 
 
 TcpServer::TcpServer(QString ipV4Address,
                      quint16 port,
                      QMainWindow* mainWindow) :
-    QTcpServer(mainWindow)
+    QTcpServer(mainWindow),
+    _port(port),
+    _mainWindow(mainWindow)
 {
     bool isValidHostAddress = _hostAddress.setAddress(ipV4Address);
     if (!isValidHostAddress) {
         QString errorMessage = "Invalid IPv4 address: " + ipV4Address;
         showErrorMessage(errorMessage);
     }
-
-    _port = port;
-    _mainWindow = mainWindow;
 }
 
 void TcpServer::start()
@@ -56,6 +56,10 @@ void TcpServer::showErrorMessage(const QString& errorMessage)
 
 void TcpServer::incomingConnection(qintptr socketDescriptor)
 {
+
+    ConnectionTask* connectionTask = new ConnectionTask(socketDescriptor, _sensors);
+    QThreadPool::globalInstance()->start(connectionTask);
+
     TcpServerThread*  tcpServerThread;
     tcpServerThread = new TcpServerThread(socketDescriptor,
                                           _sensorData,
@@ -89,12 +93,23 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     tcpServerThread->run();
 }
 
+QList<SensorData>* TcpServer::getSensors()
+{
+    return &_sensors;
+}
+
 void TcpServer::onSensorDataChanged(SensorData& sensorData)
 {
-    QMutex mutex;
-    mutex.lock();
-    _sensorData = sensorData;
-    mutex.unlock();
+    for (SensorData sensor: _sensors) {
+        if (sensorData.byte01 == sensor.byte01) {
+            QMutex mutex;
+            mutex.lock();
+            sensor.byte00 = sensorData.byte00;
+            sensor.byte02 = sensorData.byte02;
+            sensor.byte03 = sensorData.byte03;
+            mutex.unlock();
+        }
+    }
 }
 
 void TcpServer::onSocketError(QTcpSocket::SocketError socketError)

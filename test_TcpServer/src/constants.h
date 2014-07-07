@@ -8,4 +8,8 @@
 #define CUSTOM_SENSOR02 121
 #define CUSTOM_SENSOR03 211
 
+#define COMMAND_GET 'g'
+#define COMMAND_SET 's'
+#define COMMAND_ERROR 'e'
+
 #endif // CONSTANTS_H
