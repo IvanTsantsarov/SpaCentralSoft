@@ -18,14 +18,12 @@ TEMPLATE = app
 SOURCES += src/main.cpp\
         src/mainwindow.cpp \
     src/tcpserver.cpp \
-    src/tcpserverthread.cpp \
     src/connectiontask.cpp
 
 HEADERS  += src/mainwindow.h \
     src/tcpserver.h \
     src/structures.h \
     src/constants.h \
-    src/tcpserverthread.h \
     src/connectiontask.h
 
 FORMS    += src/forms/mainwindow.ui

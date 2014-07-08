@@ -6,7 +6,6 @@
 
 #include <QThreadPool>
 
-#include "tcpserverthread.h"
 #include "connectiontask.h"
 
 
@@ -54,43 +53,47 @@ void TcpServer::showErrorMessage(const QString& errorMessage)
     exit(-1);
 }
 
+void TcpServer::setSensor(const SensorData& sensorData)
+{
+    for (int currentSensorIndex = 0;
+         _sensors.count() > currentSensorIndex;
+         currentSensorIndex++) {
+        SensorData currentSensor = _sensors.at(currentSensorIndex);
+
+        if (currentSensor.byte01 == sensorData.byte01) {
+            currentSensor.byte00 = sensorData.byte00;
+            currentSensor.byte02 = sensorData.byte02;
+            currentSensor.byte03 = sensorData.byte03;
+        }
+
+        _sensors.replace(currentSensorIndex, currentSensor);
+    }
+
+    emit sensorDataChanged();
+}
+
 void TcpServer::incomingConnection(qintptr socketDescriptor)
 {
-
     ConnectionTask* connectionTask = new ConnectionTask(socketDescriptor, _sensors);
+    connectionTask->setAutoDelete(true);
+
+    bool isOk;
+    isOk = connect(connectionTask,
+                   SIGNAL(commandSent(SensorData)),
+                   this,
+                   SIGNAL(commandSent(SensorData)));
+    Q_ASSERT(isOk);
+    Q_UNUSED(isOk);
+
+    isOk = connect(connectionTask,
+                   SIGNAL(sensorSet(SensorData)),
+                   this,
+                   SLOT(onSensorSet(SensorData)));
+    Q_ASSERT(isOk);
+    Q_UNUSED(isOk);
+
     QThreadPool::globalInstance()->start(connectionTask);
 
-    TcpServerThread*  tcpServerThread;
-    tcpServerThread = new TcpServerThread(socketDescriptor,
-                                          _sensorData,
-                                          this);
-    bool isOk;
-    isOk = connect(tcpServerThread, SIGNAL(finished()),
-                   tcpServerThread, SLOT(deleteLater()));
-    Q_ASSERT(isOk);
-    Q_UNUSED(isOk);
-
-    isOk = connect(tcpServerThread, SIGNAL(socketError(QTcpSocket::SocketError)),
-                   this, SLOT(onSocketError(QTcpSocket::SocketError)));
-    Q_ASSERT(isOk);
-    Q_UNUSED(isOk);
-
-    isOk = connect(tcpServerThread, SIGNAL(temperatureDesiredChanged(quint8, qreal)),
-                   this, SIGNAL(temperatureDesiredChanged(quint8, qreal)));
-    Q_ASSERT(isOk);
-    Q_UNUSED(isOk);
-
-    isOk = connect(tcpServerThread, SIGNAL(temperatureDesiredChanged(SensorData)),
-                   this, SIGNAL(temperatureDesiredChanged(SensorData)));
-    Q_ASSERT(isOk);
-    Q_UNUSED(isOk);
-
-    isOk = connect(tcpServerThread, SIGNAL(commandSent(SensorData)),
-                   this, SIGNAL(commandSent(SensorData)));
-    Q_ASSERT(isOk);
-    Q_UNUSED(isOk);
-
-    tcpServerThread->run();
 }
 
 QList<SensorData>* TcpServer::getSensors()
@@ -98,18 +101,11 @@ QList<SensorData>* TcpServer::getSensors()
     return &_sensors;
 }
 
-void TcpServer::onSensorDataChanged(SensorData& sensorData)
+void TcpServer::onSensorSet(SensorData sensorData)
 {
-    for (SensorData sensor: _sensors) {
-        if (sensorData.byte01 == sensor.byte01) {
-            QMutex mutex;
-            mutex.lock();
-            sensor.byte00 = sensorData.byte00;
-            sensor.byte02 = sensorData.byte02;
-            sensor.byte03 = sensorData.byte03;
-            mutex.unlock();
-        }
-    }
+    setSensor(sensorData);
+
+    emit sensorSet(sensorData);
 }
 
 void TcpServer::onSocketError(QTcpSocket::SocketError socketError)

@@ -39,28 +39,15 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     bool isOk;
+    // MainWindow: Connections
+    isOk = connect(this,
+                   SIGNAL(dataSet(SensorData)),
+                   _tcpServer,
+                   SLOT(onSensorSet(SensorData)));
+    Q_ASSERT(isOk);
+    Q_UNUSED(isOk);
+
     // TcpServer: Connections
-    isOk = connect(_tcpServer,
-                   SIGNAL(serverStarted(QString, quint16)),
-                   this,
-                   SLOT(onServerStarted(QString, quint16)));
-    Q_ASSERT(isOk);
-    Q_UNUSED(isOk);
-
-    isOk = connect(_tcpServer,
-                   SIGNAL(temperatureDesiredChanged(quint8,qreal)),
-                   this,
-                   SLOT(onTemperatureDesiredChanged(quint8,qreal)));
-    Q_ASSERT(isOk);
-    Q_UNUSED(isOk);
-
-    isOk = connect(_tcpServer,
-                   SIGNAL(temperatureDesiredChanged(SensorData)),
-                   this,
-                   SLOT(onTemperatureDesiredChanged(SensorData)));
-    Q_ASSERT(isOk);
-    Q_UNUSED(isOk);
-
     isOk = connect(_tcpServer,
                    SIGNAL(commandSent(SensorData)),
                    this,
@@ -68,10 +55,24 @@ MainWindow::MainWindow(QWidget *parent) :
     Q_ASSERT(isOk);
     Q_UNUSED(isOk);
 
-    isOk = connect(this,
-                   SIGNAL(sensorDataChanged(SensorData&)),
-                   _tcpServer,
-                   SLOT(onSensorDataChanged(SensorData&)));
+    isOk = connect(_tcpServer,
+                   SIGNAL(sensorDataChanged()),
+                   this,
+                   SLOT(onSensorDataChanged()));
+    Q_ASSERT(isOk);
+    Q_UNUSED(isOk);
+
+    isOk = connect(_tcpServer,
+                   SIGNAL(sensorSet(SensorData)),
+                   this,
+                   SLOT(onSensorSet(SensorData)));
+    Q_ASSERT(isOk);
+    Q_UNUSED(isOk);
+
+    isOk = connect(_tcpServer,
+                   SIGNAL(serverStarted(QString, quint16)),
+                   this,
+                   SLOT(onServerStarted(QString, quint16)));
     Q_ASSERT(isOk);
     Q_UNUSED(isOk);
 
@@ -99,11 +100,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     // Set the input fields of Command Settings/Bytes Box (GUI) to match the first
     // item in the sensorsId ComboBox
-    setLabels(_sensors->at(0));
-
-    // Set the default values from the currently selected item in
-    // Command Settings/Bytes Box (GUI)
-    onClicked_pushButton_SetData();
+    setSensorInput(_sensors->at(0));
 
     // TcpServer: Start
     _tcpServer->start();
@@ -114,47 +111,44 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-//Unused method
-//void MainWindow::addSensor(const SensorData& sensorData)
-//{
-//    ui->lineEdit_Byte00->setText(QString(sensorData.byte00));
-//    ui->comboBox_Byte01->addItem(QString::number(sensorData.byte01),
-//                                 sensorData.byte01);
-//    ui->lineEdit_Byte00->setText(QString::number(sensorData.byte02));
-//    ui->lineEdit_Byte00->setText(QString::number(sensorData.byte03));
-//}
+void MainWindow::setDataFromInput(SensorData& sensorData)
+{
+    QString stringByte01 = ui->lineEdit_Byte00->text();
+    QString stringByte02 = ui->comboBox_Byte01->currentText();
+    QString stringByte03 = ui->lineEdit_Byte02->text();
+    QString stringByte04 = ui->lineEdit_Byte03->text();
+
+    sensorData.byte00 = stringByte01.at(0).toLatin1();
+    sensorData.byte01 = static_cast<quint8>(stringByte02.toUShort());
+    sensorData.byte02 = static_cast<qint8>(stringByte03.toShort());
+    sensorData.byte03 = static_cast<quint8>(stringByte04.toShort());
+}
 
 ///
 /// \brief MainWindow::setSensor
 /// \param sensorData
 ///
 ///
-void MainWindow::setSensor(const SensorData& sensorData)
+void MainWindow::updateSensorInput()
 {
+    SensorData currentSensor;
+
     // Look for the corresponding sensor in the list with sensors
     for (int currentSensorIndex = 0;
          _sensors->count() > currentSensorIndex;
          currentSensorIndex++) {
-        SensorData currentSensor = _sensors->at(currentSensorIndex);
-
-        if (currentSensor.byte01 == sensorData.byte01) {
-            currentSensor.byte00 = sensorData.byte00;
-            currentSensor.byte02 = sensorData.byte02;
-            currentSensor.byte03 = sensorData.byte03;
-        }
-
-        _sensors->replace(currentSensorIndex, currentSensor);
+        currentSensor = _sensors->at(currentSensorIndex);
 
         // If this is the current selected sensor in the Command
         // Settings/Bytes Box (GUI) set the corresponding input fields
         if (qvariant_cast<quint8>(ui->comboBox_Byte01->currentData())
                 == _sensors->at(currentSensorIndex).byte01 ) {
-            setLabels(_sensors->at(currentSensorIndex));
+            setSensorInput(_sensors->at(currentSensorIndex));
         }
     }
 }
 
-void MainWindow::setLabels(const SensorData& sensorData)
+void MainWindow::setSensorInput(const SensorData& sensorData)
 {
     ui->lineEdit_Byte00->setText(QString(sensorData.byte00));
     ui->lineEdit_Byte02->setText(QString::number(sensorData.byte02));
@@ -162,26 +156,6 @@ void MainWindow::setLabels(const SensorData& sensorData)
 }
 
 // SLOTS: Implementation
-
-void MainWindow::onServerStarted(QString ipV4Address, quint16 port)
-{
-    QString message("Server listening at IP: " + ipV4Address + ":" + QString::number(port));
-    ui->textEdit_ConsoleOutput->append(message);
-}
-
-void MainWindow::onTemperatureDesiredChanged(quint8 sensorId, qreal temperatureDesired)
-{
-    QString consoleMessage = QString("Set: sensorId: %1, desired temperature: %2")
-            .arg(sensorId, 3)
-            .arg(temperatureDesired, 6);
-
-    ui->textEdit_ConsoleOutput->append(consoleMessage);
-}
-
-void MainWindow::onTemperatureDesiredChanged(SensorData sensorData)
-{
-    setSensor(sensorData);
-}
 
 void MainWindow::onCommandSent(SensorData sensorData)
 {
@@ -192,7 +166,44 @@ void MainWindow::onCommandSent(SensorData sensorData)
             .arg(sensorData.byte02, 3)
             .arg(sensorData.byte03, 3);
 
+    ui->textEdit_ConsoleOutput->setTextColor(Qt::black);
     ui->textEdit_ConsoleOutput->append(consoleMessage);
+}
+
+void MainWindow::onSensorDataChanged()
+{
+    updateSensorInput();
+}
+
+void MainWindow::onSensorSet(SensorData sensorData)
+{
+    updateSensorInput();
+
+    quint8 sensorId = static_cast<quint8>(sensorData.byte01);
+    qint8 integralPart = static_cast<qint8>(sensorData.byte02);
+    quint8 fractionalPart = static_cast<quint8>(sensorData.byte03);
+
+    qreal temperatureTarget;
+    if (0 > integralPart) {
+        temperatureTarget = integralPart - static_cast<qreal>(fractionalPart) / 100;
+    }
+    else {
+        temperatureTarget = integralPart + static_cast<qreal>(fractionalPart) / 100;
+    }
+
+    QString consoleMessage = QString("Set: sensorId: %1, target temperature: %2")
+            .arg(sensorId, 3)
+            .arg(temperatureTarget, 6);
+
+    ui->textEdit_ConsoleOutput->setTextColor(Qt::red);
+    ui->textEdit_ConsoleOutput->append(consoleMessage);
+}
+
+void MainWindow::onServerStarted(QString ipV4Address, quint16 port)
+{
+    QString message("Server listening at IP: " + ipV4Address + ":" + QString::number(port));
+    ui->textEdit_ConsoleOutput->setTextColor(Qt::black);
+    ui->textEdit_ConsoleOutput->append(message);
 }
 
 ///
@@ -203,26 +214,10 @@ void MainWindow::onCommandSent(SensorData sensorData)
 ///
 void MainWindow::onClicked_pushButton_SetData()
 {
-    QString stringByte01 = ui->lineEdit_Byte00->text();
-    QString stringByte02 = ui->comboBox_Byte01->currentText();
-    QString stringByte03 = ui->lineEdit_Byte02->text();
-    QString stringByte04 = ui->lineEdit_Byte03->text();
+    SensorData sensorData;
+    setDataFromInput(sensorData);
 
-    SensorData sensorData(stringByte01.at(0).toLatin1(),
-                          static_cast<quint8>(stringByte02.toUShort()),
-                          static_cast<qint8>(stringByte03.toShort()),
-                          static_cast<quint8>(stringByte04.toShort()));
-
-    for (int currentSensorIndex = 0;
-         _sensors->size() > currentSensorIndex;
-         currentSensorIndex++ ) {
-        if (_sensors->at(currentSensorIndex).byte01 == sensorData.byte01)
-        {
-            _sensors->replace(currentSensorIndex, sensorData);
-        }
-    }
-
-    emit sensorDataChanged(sensorData);
+    emit dataSet(sensorData);
 
     QString consoleMessage = QString("New data set: %1 %2 %3 %4")
             .arg(sensorData.byte00, 3)
@@ -230,6 +225,7 @@ void MainWindow::onClicked_pushButton_SetData()
             .arg(sensorData.byte02, 3)
             .arg(sensorData.byte03, 3);
 
+    ui->textEdit_ConsoleOutput->setTextColor(Qt::green);
     ui->textEdit_ConsoleOutput->append(consoleMessage);
 }
 
@@ -246,7 +242,7 @@ void MainWindow::on_comboBox_Byte01_currentIndexChanged(int index)
          currentSensorIndex++) {
         if (qvariant_cast<quint8>(ui->comboBox_Byte01->itemData(index))
                 == _sensors->at(currentSensorIndex).byte01) {
-            setLabels(_sensors->at(currentSensorIndex));
+            setSensorInput(_sensors->at(currentSensorIndex));
         }
     }
 }

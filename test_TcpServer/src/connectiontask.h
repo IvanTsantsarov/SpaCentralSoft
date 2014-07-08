@@ -22,10 +22,12 @@ public:
     explicit ConnectionTask(quintptr socketDescritor,
                             const QList<SensorData>& sensors);
 
+private:
+    void readDataFromSensor(quint8 sensorId, QByteArray& dataArray);
 
 signals:
     void commandSent(SensorData sensorData);
-    void setSensor(SensorData sensorData);
+    void sensorSet(SensorData sensorData);
 
 public:
     void run();

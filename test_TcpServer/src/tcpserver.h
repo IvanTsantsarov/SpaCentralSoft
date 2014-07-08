@@ -32,6 +32,7 @@ public:
 
 private:
     void showErrorMessage(const QString& errorMessage);
+    void setSensor(const SensorData& sensorData);
 
 protected:
     void incomingConnection(qintptr socketDescriptor);
@@ -40,14 +41,14 @@ public:
     QList<SensorData>* getSensors();
 
 signals:
-    void serverStarted(QString ipV4Address, quint16 port);
-    void serverError(QString errorMessage);
-    void temperatureDesiredChanged(quint8 sensorId, qreal temperatureDesired);
-    void temperatureDesiredChanged(SensorData sensorData);
     void commandSent(SensorData sensorData);
+    void sensorDataChanged();
+    void serverError(QString errorMessage);
+    void serverStarted(QString ipV4Address, quint16 port);
+    void sensorSet(SensorData sensorData);
 
 public slots:
-    void onSensorDataChanged(SensorData& sensorData);
+    void onSensorSet(SensorData sensorData);
 
 private slots:
     void onSocketError(QTcpSocket::SocketError socketError);

@@ -70,6 +70,7 @@ void TcpClient::requestData()
     _tcpSocket.abort();
     _tcpSocket.connectToHost(_ipV4Address, _port, QIODevice::ReadWrite);
     _tcpSocket.write(outgoingCommandBlock);
+    _tcpSocket.flush();
 
     _currentSensorIdIndex++;
 }
@@ -98,7 +99,6 @@ void TcpClient::setData(quint8 sensorId, qreal temperatureDesired)
     _tcpSocket.connectToHost(_ipV4Address, _port, QIODevice::ReadWrite);
     _tcpSocket.write(outgoingCommandBlock);
     _tcpSocket.disconnectFromHost();
-    _tcpSocket.waitForDisconnected();
 }
 
 void TcpClient::readData()
@@ -131,8 +131,8 @@ void TcpClient::readData()
 
     emit dataReceived(sensorId, temperatureCurrent);
     emit dataReceived(sensorData);
+
     _tcpSocket.disconnectFromHost();
-    _tcpSocket.waitForDisconnected();
 }
 
 void TcpClient::displaySocketError(QAbstractSocket::SocketError socketError)

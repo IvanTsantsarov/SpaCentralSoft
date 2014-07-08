@@ -19,6 +19,8 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 private:
+    Ui::MainWindow *ui;
+
     TcpServer* _tcpServer;
     QList<SensorData>* _sensors;
 
@@ -27,19 +29,18 @@ public:
     ~MainWindow();
 
 private:
-    Ui::MainWindow *ui;
-
-    void setSensor(const SensorData& sensorData);
-    void setLabels(const SensorData& sensorData);
+    void setDataFromInput(SensorData& sensorData);
+    void setSensorInput(const SensorData& sensorData);
+    void updateSensorInput();
 
 signals:
-    void sensorDataChanged(SensorData& sensorData);
+    void dataSet(SensorData sensorData);
 
 private slots:
-    void onServerStarted(QString ipV4Address, quint16 port);
-    void onTemperatureDesiredChanged(quint8 sensorId, qreal temperatureDesired);
-    void onTemperatureDesiredChanged(SensorData sensorData);
     void onCommandSent(SensorData sensorData);
+    void onSensorDataChanged();
+    void onSensorSet(SensorData sensorData);
+    void onServerStarted(QString ipV4Address, quint16 port);
 
     void onClicked_pushButton_SetData();
     void on_comboBox_Byte01_currentIndexChanged(int index);
